@@ -3,13 +3,16 @@ import { useState, type FormEvent, type ReactNode } from 'react'
 interface AuthFormProps {
   title: string
   submitLabel: string
-  onSubmit: (email: string, password: string) => Promise<void>
+  // Solo el registro pide nombre; el login ignora el tercer argumento.
+  showName?: boolean
+  onSubmit: (email: string, password: string, name: string) => Promise<void>
   footer: ReactNode
   // Mensaje informativo tras un submit exitoso que no redirige (ej. confirmar email).
   notice?: string | null
 }
 
-export function AuthForm({ title, submitLabel, onSubmit, footer, notice }: AuthFormProps) {
+export function AuthForm({ title, submitLabel, showName, onSubmit, footer, notice }: AuthFormProps) {
+  const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
@@ -20,7 +23,7 @@ export function AuthForm({ title, submitLabel, onSubmit, footer, notice }: AuthF
     setError(null)
     setSubmitting(true)
     try {
-      await onSubmit(email, password)
+      await onSubmit(email, password, name.trim())
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Ocurrió un error inesperado')
     } finally {
@@ -29,11 +32,25 @@ export function AuthForm({ title, submitLabel, onSubmit, footer, notice }: AuthF
   }
 
   return (
-    <main className="mx-auto flex min-h-svh max-w-sm flex-col justify-center gap-6 px-4">
-      <h1 className="text-center text-3xl font-semibold">🎬 {title}</h1>
+    <main className="auth">
+      <h1 className="auth__title">🎬 {title}</h1>
 
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-        <label className="flex flex-col gap-1 text-sm">
+      <form onSubmit={handleSubmit} className="auth__form">
+        {showName && (
+          <label className="field">
+            Nombre
+            <input
+              type="text"
+              required
+              maxLength={40}
+              autoComplete="given-name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
+          </label>
+        )}
+
+        <label className="field">
           Correo
           <input
             type="email"
@@ -41,44 +58,38 @@ export function AuthForm({ title, submitLabel, onSubmit, footer, notice }: AuthF
             autoComplete="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="rounded-md border border-slate-700 bg-slate-900 px-3 py-2 outline-none focus:border-indigo-400"
           />
         </label>
 
-        <label className="flex flex-col gap-1 text-sm">
+        <label className="field">
           Contraseña
           <input
             type="password"
             required
             minLength={6}
-            autoComplete={submitLabel === 'Entrar' ? 'current-password' : 'new-password'}
+            autoComplete={showName ? 'new-password' : 'current-password'}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="rounded-md border border-slate-700 bg-slate-900 px-3 py-2 outline-none focus:border-indigo-400"
           />
         </label>
 
         {error && (
-          <p role="alert" className="rounded-md bg-red-950 px-3 py-2 text-sm text-red-300">
+          <p role="alert" className="alert alert--error">
             {error}
           </p>
         )}
         {notice && (
-          <p role="status" className="rounded-md bg-emerald-950 px-3 py-2 text-sm text-emerald-300">
+          <p role="status" className="alert alert--ok">
             {notice}
           </p>
         )}
 
-        <button
-          type="submit"
-          disabled={submitting}
-          className="rounded-md bg-indigo-500 px-4 py-2 font-medium hover:bg-indigo-400 disabled:opacity-50"
-        >
+        <button type="submit" disabled={submitting} className="btn btn--primary">
           {submitting ? 'Procesando…' : submitLabel}
         </button>
       </form>
 
-      <p className="text-center text-sm text-slate-400">{footer}</p>
+      <p className="auth__footer">{footer}</p>
     </main>
   )
 }

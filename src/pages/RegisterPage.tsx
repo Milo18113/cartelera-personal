@@ -14,9 +14,10 @@ export function RegisterPage() {
     <AuthForm
       title="Crear cuenta"
       submitLabel="Registrarme"
+      showName
       notice={notice}
-      onSubmit={async (email, password) => {
-        const { needsEmailConfirmation } = await signUp(email, password)
+      onSubmit={async (email, password, name) => {
+        const { needsEmailConfirmation } = await signUp(email, password, name)
         if (needsEmailConfirmation) {
           setNotice('Revisa tu correo para confirmar la cuenta y luego inicia sesión.')
           return
@@ -25,10 +26,7 @@ export function RegisterPage() {
       }}
       footer={
         <>
-          ¿Ya tienes cuenta?{' '}
-          <Link to="/login" className="text-indigo-400 hover:underline">
-            Inicia sesión
-          </Link>
+          ¿Ya tienes cuenta? <Link to="/login">Inicia sesión</Link>
         </>
       }
     />

@@ -6,16 +6,12 @@ export function AppLayout() {
   const { user, signOut } = useAuth()
 
   return (
-    <div className="mx-auto min-h-svh max-w-5xl px-4">
-      <header className="flex items-center justify-between border-b border-slate-800 py-4">
-        <span className="text-lg font-semibold">🎬 Mi Cartelera Personal</span>
-        <div className="flex items-center gap-3 text-sm">
-          <span className="hidden text-slate-400 sm:inline">{user?.email}</span>
-          <button
-            type="button"
-            onClick={() => void signOut()}
-            className="rounded-md border border-slate-700 px-3 py-1.5 hover:bg-slate-800"
-          >
+    <div className="app">
+      <header className="app__header">
+        <span className="app__brand">🎬 Mi Cartelera Personal</span>
+        <div className="app__user">
+          <span className="app__email">{user?.email}</span>
+          <button type="button" onClick={() => void signOut()} className="btn btn--ghost">
             Cerrar sesión
           </button>
         </div>

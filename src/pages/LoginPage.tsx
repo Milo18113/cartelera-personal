@@ -19,10 +19,7 @@ export function LoginPage() {
       }}
       footer={
         <>
-          ¿No tienes cuenta?{' '}
-          <Link to="/registro" className="text-indigo-400 hover:underline">
-            Regístrate
-          </Link>
+          ¿No tienes cuenta? <Link to="/registro">Regístrate</Link>
         </>
       }
     />

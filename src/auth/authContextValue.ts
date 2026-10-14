@@ -8,7 +8,7 @@ export interface SignUpResult {
 export interface AuthContextValue {
   user: User | null
   loading: boolean
-  signUp: (email: string, password: string) => Promise<SignUpResult>
+  signUp: (email: string, password: string, displayName: string) => Promise<SignUpResult>
   signIn: (email: string, password: string) => Promise<void>
   signOut: () => Promise<void>
 }

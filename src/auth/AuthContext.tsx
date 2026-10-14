@@ -21,8 +21,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => data.subscription.unsubscribe()
   }, [])
 
-  const signUp = async (email: string, password: string) => {
-    const { data, error } = await supabase.auth.signUp({ email, password })
+  const signUp = async (email: string, password: string, displayName: string) => {
+    // display_name queda en user_metadata y alimenta el saludo de la pantalla de inicio.
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: { data: { display_name: displayName } },
+    })
     if (error) throw error
     // Con "Confirm email" activo, Supabase no devuelve sesión hasta confirmar.
     return { needsEmailConfirmation: data.session === null }
