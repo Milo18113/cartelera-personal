@@ -163,7 +163,7 @@ function DetailBody({ detalle }: { detalle: DetalleTitulo }) {
             </div>
 
             <div className="detail__section">
-              <h3 className="detail__heading">Mi comentario</h3>
+              <h3 className="detail__heading">Comentario</h3>
               {/* key: si cambia la fila (otro título, o se quitó y se volvió a agregar) el borrador se reinicia. */}
               <CommentBox
                 key={item.id}
