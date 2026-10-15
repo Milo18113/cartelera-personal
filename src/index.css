@@ -1,5 +1,18 @@
 /* Única hoja de estilos de la app. Secciones: tokens, base, botones, auth, layout, inicio, tarjetas. */
 
+/* ---------- Fuente ---------- */
+/* El nombre es el que trae el archivo internamente ("Refinery 35 Bold"). La fuente ya es
+   bold pero está registrada como peso 400; el rango 100-900 hace que el navegador la use
+   para cualquier font-weight en vez de simular una negrita encima. */
+@font-face {
+  font-family: 'Refinery 35 Bold';
+  src: url('./assets/fonts/refinery-35-bold.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: normal;
+  /* swap: texto visible con la fuente de respaldo mientras descarga. */
+  font-display: swap;
+}
+
 /* ---------- Tokens ---------- */
 :root {
   --bg: #14181c;
@@ -22,7 +35,10 @@
   --card-width: 150px;
   --page-width: 1100px;
 
-  font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
+  /* Los inputs, selects y botones heredan esta familia vía `font: inherit`. */
+  font-family: 'Refinery 35 Bold', system-ui, 'Segoe UI', Roboto, sans-serif;
+  /* Sin negritas/cursivas sintéticas: solo existe este archivo. */
+  font-synthesis: none;
   color-scheme: dark;
 }
 
