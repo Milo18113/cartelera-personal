@@ -1,11 +1,8 @@
 import { useEffect, useState } from 'react'
-import {
-  fetchRecomendacionesPeliculas,
-  type TituloRecomendado,
-} from '../infrastructure/tmdb'
+import { fetchRecomendacionesPeliculas, type TituloTmdb } from '../infrastructure/tmdb'
 
 interface RecomendacionesState {
-  items: TituloRecomendado[]
+  items: TituloTmdb[]
   loading: boolean
   error: string | null
 }

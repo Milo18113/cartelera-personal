@@ -5,6 +5,7 @@ import { AppLayout } from './components/AppLayout'
 import { HomePage } from './pages/HomePage'
 import { LoginPage } from './pages/LoginPage'
 import { RegisterPage } from './pages/RegisterPage'
+import { SearchPage } from './pages/SearchPage'
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
             }
           >
             <Route path="/" element={<HomePage />} />
+            <Route path="/buscar" element={<SearchPage />} />
           </Route>
           {/* URL desconocida → "/", que sin sesión rebota a /login. */}
           <Route path="*" element={<Navigate to="/" replace />} />

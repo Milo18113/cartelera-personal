@@ -2,9 +2,9 @@ import { useMemo, useState } from 'react'
 import { nombreDeUsuario } from '../auth/nombreDeUsuario'
 import { useAuth } from '../auth/useAuth'
 import { FilterBar } from '../components/FilterBar'
-import type { TarjetaPelicula } from '../components/MovieCard'
 import { MovieRow } from '../components/MovieRow'
 import { StatPills } from '../components/StatPills'
+import { tarjetaDeItem, tarjetaDeTitulo } from '../components/tarjetas'
 import {
   ESTADOS,
   ETIQUETA_ESTADO,
@@ -13,47 +13,30 @@ import {
   ordenarLista,
   type CriterioOrden,
   type FiltroEstado,
-  type ItemLista,
 } from '../domain/miLista'
-import { useMiLista } from '../hooks/useMiLista'
+import { useAccionesTarjeta } from '../hooks/useAccionesTarjeta'
 import { useRecomendaciones } from '../hooks/useRecomendaciones'
-import type { TituloRecomendado } from '../infrastructure/tmdb'
+import { useMiLista } from '../lista/useMiLista'
 
 const MAX_RECIENTES = 15
-
-function tarjetaDeItem(item: ItemLista): TarjetaPelicula {
-  return {
-    clave: String(item.id),
-    titulo: item.titulo,
-    posterUrl: item.poster_url,
-    calificacion: item.calificacion_personal,
-  }
-}
-
-function tarjetaDeRecomendacion(titulo: TituloRecomendado): TarjetaPelicula {
-  return {
-    clave: claveTitulo(titulo.tipo, titulo.tmdbId),
-    titulo: titulo.titulo,
-    anio: titulo.anio,
-    posterUrl: titulo.posterUrl,
-  }
-}
 
 export function HomePage() {
   const { user } = useAuth()
   const lista = useMiLista()
+  const acciones = useAccionesTarjeta()
   const recomendaciones = useRecomendaciones()
   const [filtro, setFiltro] = useState<FiltroEstado>('todas')
   const [orden, setOrden] = useState<CriterioOrden>('fecha')
 
   const conteo = useMemo(() => contarPorEstado(lista.items), [lista.items])
 
-  // No recomendar lo que el usuario ya tiene guardado.
+  // No recomendar lo que el usuario ya tiene guardado: así toda tarjeta recomendada
+  // está "en ninguna lista" y, al agregarla, pasa sola a las filas de mi lista.
   const recomendadas = useMemo(() => {
     const guardadas = new Set(lista.items.map((i) => claveTitulo(i.tipo_contenido, i.tmdb_id)))
     return recomendaciones.items
       .filter((t) => !guardadas.has(claveTitulo(t.tipo, t.tmdbId)))
-      .map(tarjetaDeRecomendacion)
+      .map((t) => tarjetaDeTitulo(t))
   }, [lista.items, recomendaciones.items])
 
   // fetchMiLista ya llega ordenada por fecha_agregado desc.
@@ -77,23 +60,36 @@ export function HomePage() {
         onOrdenChange={setOrden}
       />
 
-      <MovieRow
-        titulo="Recomendadas para ti"
-        peliculas={recomendadas}
-        loading={recomendaciones.loading}
-        error={recomendaciones.error}
-        vacio="No hay recomendaciones por ahora."
-      />
+      {acciones.actionError && (
+        <p role="alert" className="alert alert--error">
+          {acciones.actionError}
+        </p>
+      )}
 
-      {/* Con un filtro activo se muestra solo la fila de ese estado. */}
+      {/* Con un filtro activo solo se muestra la fila de ese estado: ni recomendadas ni recientes. */}
       {filtro === 'todas' && (
-        <MovieRow
-          titulo="Agregadas recientemente"
-          peliculas={recientes}
-          loading={lista.loading}
-          error={lista.error}
-          vacio="Aún no has agregado nada."
-        />
+        <>
+          <MovieRow
+            titulo="Recomendadas para ti"
+            peliculas={recomendadas}
+            loading={recomendaciones.loading}
+            error={recomendaciones.error}
+            vacio="No hay recomendaciones por ahora."
+            busy={acciones.busy}
+            onAvanzar={acciones.onAvanzar}
+            onEliminar={acciones.onEliminar}
+          />
+          <MovieRow
+            titulo="Agregadas recientemente"
+            peliculas={recientes}
+            loading={lista.loading}
+            error={lista.error}
+            vacio="Aún no has agregado nada."
+            busy={acciones.busy}
+            onAvanzar={acciones.onAvanzar}
+            onEliminar={acciones.onEliminar}
+          />
+        </>
       )}
 
       {estadosVisibles.map((estado) => (
@@ -107,6 +103,9 @@ export function HomePage() {
           loading={lista.loading}
           error={lista.error}
           vacio="No tienes títulos en esta lista."
+          busy={acciones.busy}
+          onAvanzar={acciones.onAvanzar}
+          onEliminar={acciones.onEliminar}
         />
       ))}
     </main>

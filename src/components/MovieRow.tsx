@@ -1,4 +1,5 @@
-import { MovieCard, type TarjetaPelicula } from './MovieCard'
+import type { TarjetaPelicula } from './MovieCard'
+import { MovieCardWithActions } from './MovieCardWithActions'
 
 interface MovieRowProps {
   titulo: string
@@ -6,11 +7,23 @@ interface MovieRowProps {
   loading: boolean
   error: string | null
   vacio: string
+  busy: ReadonlySet<string>
+  onAvanzar: (pelicula: TarjetaPelicula) => void
+  onEliminar: (pelicula: TarjetaPelicula) => void
 }
 
 const SKELETONS = 8
 
-export function MovieRow({ titulo, peliculas, loading, error, vacio }: MovieRowProps) {
+export function MovieRow({
+  titulo,
+  peliculas,
+  loading,
+  error,
+  vacio,
+  busy,
+  onAvanzar,
+  onEliminar,
+}: MovieRowProps) {
   return (
     <section className="row">
       <h2 className="row__title">{titulo}</h2>
@@ -30,7 +43,13 @@ export function MovieRow({ titulo, peliculas, loading, error, vacio }: MovieRowP
       ) : (
         <div className="row__track">
           {peliculas.map((pelicula) => (
-            <MovieCard key={pelicula.clave} pelicula={pelicula} />
+            <MovieCardWithActions
+              key={pelicula.clave}
+              pelicula={pelicula}
+              busy={busy}
+              onAvanzar={onAvanzar}
+              onEliminar={onEliminar}
+            />
           ))}
         </div>
       )}

@@ -26,6 +26,17 @@ export const ETIQUETA_ESTADO: Record<Estado, string> = {
   vista: 'Vistas',
 }
 
+// ninguna lista (null) → por_ver → viendo → vista. "vista" es final: devuelve null.
+const SIGUIENTE_ESTADO: Record<Estado, Estado | null> = {
+  por_ver: 'viendo',
+  viendo: 'vista',
+  vista: null,
+}
+
+export function siguienteEstado(actual: Estado | null): Estado | null {
+  return actual === null ? 'por_ver' : SIGUIENTE_ESTADO[actual]
+}
+
 export function contarPorEstado(items: readonly ItemLista[]): Record<Estado, number> {
   const conteo: Record<Estado, number> = { por_ver: 0, viendo: 0, vista: 0 }
   for (const item of items) conteo[item.estado] += 1

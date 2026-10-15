@@ -4,6 +4,7 @@
 :root {
   --bg: #14181c;
   --surface: #1f252b;
+  --surface-highlight: #313b45;
   --border: #2c343c;
   --text: #9ab;
   --text-strong: #fff;
@@ -15,6 +16,9 @@
   --color-error: #ff6b6b;
 
   --radius: 6px;
+  /* Radio único para todos los botones cuadrados con ícono (squircle). */
+  --radius-icon-btn: 10px;
+  --icon-btn-size: 36px;
   --card-width: 150px;
   --page-width: 1100px;
 
@@ -174,6 +178,37 @@ a {
   color: var(--text-strong);
   font-size: 1.125rem;
   font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+/* Buscador del header: ocupa el espacio libre entre la marca y el usuario. */
+.searchbar {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 8px;
+  max-width: 420px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  padding: 0 12px;
+}
+
+.searchbar:focus-within {
+  outline: 2px solid var(--color-viendo);
+  outline-offset: 1px;
+}
+
+.searchbar input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text-strong);
+  padding: 9px 0;
+  font: inherit;
+  outline: none;
 }
 
 .app__user {
@@ -186,6 +221,17 @@ a {
 @media (max-width: 640px) {
   .app__email {
     display: none;
+  }
+
+  /* En móvil el buscador baja a su propia línea, a todo el ancho. */
+  .app__header {
+    flex-wrap: wrap;
+  }
+
+  .searchbar {
+    order: 3;
+    flex-basis: 100%;
+    max-width: none;
   }
 }
 
@@ -223,7 +269,7 @@ a {
 }
 
 .pill strong {
-  font-size: 1rem;
+  font-weight: 700;
 }
 
 .pill--por_ver {
@@ -370,10 +416,89 @@ a {
   opacity: 1;
 }
 
+/* En pantallas táctiles no hay hover: sin esto los botones serían inalcanzables. */
+@media (hover: none) {
+  .card__overlay {
+    opacity: 1;
+  }
+}
+
 .card__actions {
   display: flex;
   justify-content: flex-end;
   gap: 6px;
+}
+
+/* Botón cuadrado con ícono. corner-shape: squircle suaviza la curva donde el
+   navegador lo soporta; en el resto queda como esquina redondeada normal. */
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--icon-btn-size);
+  height: var(--icon-btn-size);
+  padding: 0;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: var(--radius-icon-btn);
+  background: rgba(20, 24, 28, 0.72);
+  color: var(--text-strong);
+  backdrop-filter: blur(4px);
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+
+@supports (corner-shape: squircle) {
+  .icon-btn {
+    corner-shape: squircle;
+    border-radius: calc(var(--radius-icon-btn) * 1.6);
+  }
+}
+
+/* Mismo hover para el botón neutro y los de estado; solo eliminar usa rojo (regla más abajo). */
+.icon-btn:hover:not(:disabled) {
+  background: var(--text-strong);
+  border-color: transparent;
+  color: var(--bg);
+}
+
+.icon-btn:focus-visible {
+  outline: 2px solid var(--text-strong);
+  outline-offset: 2px;
+}
+
+.icon-btn:disabled {
+  cursor: default;
+}
+
+.icon-btn[aria-busy='true'] {
+  opacity: 0.5;
+}
+
+/* Un color por estado, los mismos de las pills. */
+.icon-btn--por_ver {
+  background: var(--color-por-ver);
+  border-color: transparent;
+  color: var(--bg);
+}
+
+.icon-btn--viendo {
+  background: var(--color-viendo);
+  border-color: transparent;
+  color: var(--bg);
+}
+
+.icon-btn--vista {
+  background: var(--color-vista);
+  border-color: transparent;
+  color: var(--bg);
+}
+
+.icon-btn--eliminar:hover:not(:disabled) {
+  background: var(--color-error);
+  border-color: transparent;
+  color: var(--bg);
 }
 
 .card__title {
@@ -397,15 +522,55 @@ a {
   color: var(--color-por-ver);
 }
 
-.card--skeleton {
-  animation: shimmer 1.2s ease-in-out infinite alternate;
+/* Un solo estado de carga para las dos fases: esqueleto mientras llegan los datos
+   (--skeleton) y póster aún descargándose (--cargando). Barrido de luz sobre el fondo. */
+.card--skeleton,
+.card--cargando {
+  background: linear-gradient(
+    100deg,
+    var(--surface) 30%,
+    var(--surface-highlight) 50%,
+    var(--surface) 70%
+  );
+  background-size: 250% 100%;
+  animation: shimmer 1.4s linear infinite;
 }
 
 @keyframes shimmer {
   from {
-    opacity: 0.4;
+    background-position: 150% 0;
   }
   to {
-    opacity: 0.9;
+    background-position: -100% 0;
   }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card--skeleton,
+  .card--cargando {
+    animation: none;
+  }
+}
+
+/* ---------- Búsqueda ---------- */
+.search {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding-top: 32px;
+}
+
+.search__title {
+  font-size: clamp(1.25rem, 3vw, 1.75rem);
+}
+
+/* Grilla (no fila): las tarjetas llenan el ancho y saltan de línea. */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(var(--card-width), 1fr));
+  gap: 16px;
+}
+
+.search__more {
+  align-self: center;
 }
