@@ -1,4 +1,5 @@
 import { siguienteEstado, type Estado } from '../domain/miLista'
+import { ETIQUETA_ACCION_ESTADO } from './etiquetasEstado'
 import { ICONO_AGREGAR, ICONO_ELIMINAR, ICONO_ESTADO, ICON_PROPS } from './iconos'
 
 interface CardActionsProps {
@@ -8,17 +9,9 @@ interface CardActionsProps {
   onEliminar: () => void
 }
 
-// Cada etiqueta dice el estado actual y qué pasará al hacer click (también es el tooltip).
-const ETIQUETA_BOTON: Record<Estado | 'ninguna', string> = {
-  ninguna: 'Agregar a pendientes',
-  por_ver: 'Pendiente · pasar a en progreso',
-  viendo: 'En progreso · marcar como vista',
-  vista: 'Vista',
-}
-
 export function CardActions({ estado, busy, onAvanzar, onEliminar }: CardActionsProps) {
   const Icono = estado === null ? ICONO_AGREGAR : ICONO_ESTADO[estado]
-  const etiqueta = ETIQUETA_BOTON[estado ?? 'ninguna']
+  const etiqueta = ETIQUETA_ACCION_ESTADO[estado ?? 'ninguna']
   const esFinal = siguienteEstado(estado) === null
 
   return (

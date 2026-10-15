@@ -2,9 +2,11 @@ import { useEffect, useState, type ReactNode } from 'react'
 import { claveTitulo, type Estado, type ItemLista } from '../domain/miLista'
 import {
   actualizarEstado,
+  actualizarOpinion,
   eliminarDeLista,
   fetchMiLista,
   insertarEnLista,
+  type CambiosOpinion,
   type NuevoItem,
 } from '../infrastructure/miListaRepository'
 import { MiListaContext } from './miListaContextValue'
@@ -15,8 +17,8 @@ interface MiListaState {
   error: string | null
 }
 
-// Una sola copia de la lista para inicio y búsqueda: así ambas pantallas muestran el
-// mismo estado de cada título y no repiten la consulta a Supabase.
+// Una sola copia de la lista para inicio, búsqueda y detalle: así todas las pantallas
+// muestran el mismo estado de cada título y no repiten la consulta a Supabase.
 export function MiListaProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<MiListaState>({ items: [], loading: true, error: null })
   const [actionError, setActionError] = useState<string | null>(null)
@@ -44,14 +46,17 @@ export function MiListaProvider({ children }: { children: ReactNode }) {
     }
   }, [])
 
-  // Envuelve cada acción: marca la clave como ocupada y captura el error para la UI.
-  const ejecutar = async (clave: string, accion: () => Promise<void>) => {
+  // Envuelve cada acción: marca la clave como ocupada, captura el error para la UI y
+  // devuelve si salió bien.
+  const ejecutar = async (clave: string, accion: () => Promise<void>): Promise<boolean> => {
     setActionError(null)
     setBusy((prev) => new Set(prev).add(clave))
     try {
       await accion()
+      return true
     } catch (err) {
       setActionError(err instanceof Error ? err.message : 'No se pudo completar la acción')
+      return false
     } finally {
       setBusy((prev) => {
         const siguiente = new Set(prev)
@@ -60,6 +65,12 @@ export function MiListaProvider({ children }: { children: ReactNode }) {
       })
     }
   }
+
+  const reemplazar = (actualizado: ItemLista) =>
+    setState((s) => ({
+      ...s,
+      items: s.items.map((i) => (i.id === actualizado.id ? actualizado : i)),
+    }))
 
   // Se espera a la DB antes de tocar el estado local: la UI nunca muestra algo no persistido.
   const agregar = (nuevo: NuevoItem) =>
@@ -70,11 +81,12 @@ export function MiListaProvider({ children }: { children: ReactNode }) {
 
   const cambiarEstado = (item: ItemLista, estado: Estado) =>
     ejecutar(claveTitulo(item.tipo_contenido, item.tmdb_id), async () => {
-      const actualizado = await actualizarEstado(item.id, estado)
-      setState((s) => ({
-        ...s,
-        items: s.items.map((i) => (i.id === actualizado.id ? actualizado : i)),
-      }))
+      reemplazar(await actualizarEstado(item.id, estado))
+    })
+
+  const guardarOpinion = (item: ItemLista, cambios: CambiosOpinion) =>
+    ejecutar(claveTitulo(item.tipo_contenido, item.tmdb_id), async () => {
+      reemplazar(await actualizarOpinion(item.id, cambios))
     })
 
   const eliminar = (item: ItemLista) =>
@@ -85,7 +97,15 @@ export function MiListaProvider({ children }: { children: ReactNode }) {
 
   return (
     <MiListaContext.Provider
-      value={{ ...state, actionError, busy, agregar, cambiarEstado, eliminar }}
+      value={{
+        ...state,
+        actionError,
+        busy,
+        agregar,
+        cambiarEstado,
+        actualizarOpinion: guardarOpinion,
+        eliminar,
+      }}
     >
       {children}
     </MiListaContext.Provider>

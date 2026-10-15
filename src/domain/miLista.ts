@@ -37,6 +37,13 @@ export function siguienteEstado(actual: Estado | null): Estado | null {
   return actual === null ? 'por_ver' : SIGUIENTE_ESTADO[actual]
 }
 
+// Para mostrar el estado de un solo título (pill del detalle).
+export const ETIQUETA_ESTADO_SINGULAR: Record<Estado, string> = {
+  por_ver: 'Pendiente',
+  viendo: 'En progreso',
+  vista: 'Vista',
+}
+
 export function contarPorEstado(items: readonly ItemLista[]): Record<Estado, number> {
   const conteo: Record<Estado, number> = { por_ver: 0, viendo: 0, vista: 0 }
   for (const item of items) conteo[item.estado] += 1

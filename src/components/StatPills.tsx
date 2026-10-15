@@ -1,5 +1,5 @@
 import type { Estado } from '../domain/miLista'
-import { ICONO_ESTADO, ICON_PROPS } from './iconos'
+import { EstadoPill } from './EstadoPill'
 
 interface StatPillsProps {
   conteo: Record<Estado, number>
@@ -14,15 +14,13 @@ const PILLS = [
 export function StatPills({ conteo }: StatPillsProps) {
   return (
     <ul className="pills" aria-label="Resumen de tu lista">
-      {PILLS.map(({ estado, singular, plural }) => {
-        const Icono = ICONO_ESTADO[estado]
-        return (
-          <li key={estado} className={`pill pill--${estado}`}>
-            <Icono {...ICON_PROPS} aria-hidden="true" />
+      {PILLS.map(({ estado, singular, plural }) => (
+        <li key={estado}>
+          <EstadoPill estado={estado}>
             <strong>{conteo[estado]}</strong> {conteo[estado] === 1 ? singular : plural}
-          </li>
-        )
-      })}
+          </EstadoPill>
+        </li>
+      ))}
     </ul>
   )
 }

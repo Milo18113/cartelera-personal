@@ -1,8 +1,11 @@
 import type { ConsultaBusqueda } from '../domain/busqueda'
+import type { DetalleTitulo } from '../domain/detalle'
 import { claveTitulo, type TipoContenido } from '../domain/miLista'
 
 const API_BASE = 'https://api.themoviedb.org/3'
-const IMAGE_BASE = 'https://image.tmdb.org/t/p/w342'
+const IMAGE_BASE = 'https://image.tmdb.org/t/p'
+// Reparto mostrado en el detalle: los primeros del crédito (TMDB ya los ordena por importancia).
+const MAX_REPARTO = 12
 // /popular pagina de a 20; elegir una página al azar da variedad sin necesitar otro endpoint.
 const PAGINAS_POPULARES = 20
 
@@ -41,8 +44,39 @@ interface TmdbSerie {
   popularity: number
 }
 
-export function posterUrl(posterPath: string | null): string | null {
-  return posterPath ? `${IMAGE_BASE}${posterPath}` : null
+// w342 para tarjetas (y es lo que se guarda en mi_lista); w500 para el póster grande del detalle.
+interface TmdbCreditos {
+  cast: { name: string }[]
+  crew: { name: string; job: string }[]
+}
+
+// Campos comunes de /movie/{id} y /tv/{id} con append_to_response=credits.
+interface TmdbDetalleBase {
+  id: number
+  poster_path: string | null
+  overview: string
+  genres: { name: string }[]
+  vote_average: number
+  vote_count: number
+  credits: TmdbCreditos
+}
+
+interface TmdbDetalleMovie extends TmdbDetalleBase {
+  title: string
+  release_date?: string
+}
+
+interface TmdbDetalleSerie extends TmdbDetalleBase {
+  name: string
+  first_air_date?: string
+  created_by: { name: string }[]
+}
+
+export function posterUrl(
+  posterPath: string | null,
+  ancho: 'w342' | 'w500' = 'w342',
+): string | null {
+  return posterPath ? `${IMAGE_BASE}/${ancho}${posterPath}` : null
 }
 
 async function tmdbGet<T>(
@@ -187,4 +221,55 @@ export async function buscarTitulos(
   )
 
   return { items: deduplicar([...porTexto, ...porAnio]), hayMas: pagina < totalPaginas }
+}
+
+// Una sola llamada trae datos + créditos (append_to_response) en vez de dos peticiones.
+export async function fetchDetalleTitulo(
+  tipo: TipoContenido,
+  tmdbId: number,
+  signal?: AbortSignal,
+): Promise<DetalleTitulo> {
+  const ruta = tipo === 'pelicula' ? `/movie/${tmdbId}` : `/tv/${tmdbId}`
+  const data = await tmdbGet<TmdbDetalleMovie | TmdbDetalleSerie>(
+    ruta,
+    { append_to_response: 'credits' },
+    signal,
+  )
+
+  // TMDB devuelve la sinopsis vacía cuando no hay traducción al español: cae al inglés.
+  let sinopsis = data.overview.trim()
+  if (!sinopsis) {
+    const original = await tmdbGet<{ overview: string }>(ruta, { language: 'en-US' }, signal)
+    sinopsis = original.overview.trim()
+  }
+
+  const base = {
+    tmdbId,
+    tipo,
+    posterUrl: posterUrl(data.poster_path, 'w500'),
+    posterListaUrl: posterUrl(data.poster_path),
+    generos: data.genres.map((g) => g.name),
+    sinopsis,
+    calificacion: data.vote_average / 2,
+    votos: data.vote_count,
+    reparto: data.credits.cast.slice(0, MAX_REPARTO).map((c) => c.name),
+  }
+
+  if ('title' in data) {
+    return {
+      ...base,
+      titulo: data.title,
+      anio: data.release_date ? data.release_date.slice(0, 4) : null,
+      creditos: {
+        etiqueta: 'Dirigida por',
+        nombres: data.credits.crew.filter((c) => c.job === 'Director').map((c) => c.name),
+      },
+    }
+  }
+  return {
+    ...base,
+    titulo: data.name,
+    anio: data.first_air_date ? data.first_air_date.slice(0, 4) : null,
+    creditos: { etiqueta: 'Creada por', nombres: data.created_by.map((c) => c.name) },
+  }
 }

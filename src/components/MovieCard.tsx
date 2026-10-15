@@ -1,6 +1,8 @@
 import { useState, type ReactNode } from 'react'
+import { Link } from 'react-router-dom'
 import { Star } from 'lucide-react'
 import type { ItemLista, TipoContenido } from '../domain/miLista'
+import { rutaDetalle } from '../lib/rutas'
 
 export interface TarjetaPelicula {
   // claveTitulo(tipo, tmdbId): única dentro de una fila y usada para marcar acciones en curso.
@@ -42,6 +44,14 @@ export function MovieCard({ pelicula, acciones }: MovieCardProps) {
       ) : (
         <div className="card__poster card__poster--empty">{titulo}</div>
       )}
+
+      {/* Link real (no onClick en el article): funciona con teclado, clic medio y "abrir en pestaña".
+          Cubre toda la tarjeta; el overlay queda encima solo para los botones. */}
+      <Link
+        className="card__link"
+        to={rutaDetalle(pelicula.tipo, pelicula.tmdbId)}
+        aria-label={`Ver detalle de ${titulo}`}
+      />
 
       {/* El overlay va sobre el póster (position: absolute) y aparece con hover/focus. */}
       <div className="card__overlay">

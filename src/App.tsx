@@ -2,6 +2,7 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { AuthProvider } from './auth/AuthContext'
 import { ProtectedRoute } from './auth/ProtectedRoute'
 import { AppLayout } from './components/AppLayout'
+import { DetailPage } from './pages/DetailPage'
 import { HomePage } from './pages/HomePage'
 import { LoginPage } from './pages/LoginPage'
 import { RegisterPage } from './pages/RegisterPage'
@@ -24,6 +25,7 @@ function App() {
           >
             <Route path="/" element={<HomePage />} />
             <Route path="/buscar" element={<SearchPage />} />
+            <Route path="/titulo/:tipo/:id" element={<DetailPage />} />
           </Route>
           {/* URL desconocida → "/", que sin sesión rebota a /login. */}
           <Route path="*" element={<Navigate to="/" replace />} />

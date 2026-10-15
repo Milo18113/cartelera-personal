@@ -52,6 +52,24 @@ export async function actualizarEstado(id: number, estado: Estado): Promise<Item
   return data as ItemLista
 }
 
+// null borra el valor (quitar la calificación o vaciar el comentario).
+export interface CambiosOpinion {
+  calificacion_personal?: number | null
+  comentario?: string | null
+}
+
+export async function actualizarOpinion(id: number, cambios: CambiosOpinion): Promise<ItemLista> {
+  const { data, error } = await supabase
+    .from('mi_lista')
+    .update(cambios)
+    .eq('id', id)
+    .select()
+    .single()
+
+  if (error) throw new Error(error.message)
+  return data as ItemLista
+}
+
 export async function eliminarDeLista(id: number): Promise<void> {
   const { error } = await supabase.from('mi_lista').delete().eq('id', id)
   if (error) throw new Error(error.message)

@@ -1,3 +1,4 @@
+import type { DetalleTitulo } from '../domain/detalle'
 import { claveTitulo, type ItemLista } from '../domain/miLista'
 import type { TituloTmdb } from '../infrastructure/tmdb'
 import type { TarjetaPelicula } from './MovieCard'
@@ -10,6 +11,20 @@ export function tarjetaDeItem(item: ItemLista): TarjetaPelicula {
     titulo: item.titulo,
     posterUrl: item.poster_url,
     calificacion: item.calificacion_personal,
+    item,
+  }
+}
+
+// Permite que el detalle reutilice las mismas acciones (agregar/avanzar/eliminar) que las tarjetas.
+export function tarjetaDeDetalle(detalle: DetalleTitulo, item?: ItemLista): TarjetaPelicula {
+  return {
+    clave: claveTitulo(detalle.tipo, detalle.tmdbId),
+    tmdbId: detalle.tmdbId,
+    tipo: detalle.tipo,
+    titulo: detalle.titulo,
+    anio: detalle.anio,
+    posterUrl: detalle.posterListaUrl,
+    calificacion: item?.calificacion_personal,
     item,
   }
 }
