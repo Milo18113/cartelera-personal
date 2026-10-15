@@ -1,15 +1,24 @@
 /* Única hoja de estilos de la app. Secciones: tokens, base, botones, auth, layout, inicio, tarjetas. */
 
 /* ---------- Fuente ---------- */
-/* El nombre es el que trae el archivo internamente ("Refinery 35 Bold"). La fuente ya es
-   bold pero está registrada como peso 400; el rango 100-900 hace que el navegador la use
-   para cualquier font-weight en vez de simular una negrita encima. */
+/* Los nombres son los que traen los archivos internamente. Cada archivo es una familia
+   separada y ambos están registrados como peso 400; el rango 100-900 hace que el navegador
+   use el archivo para cualquier font-weight en vez de simular una negrita encima.
+   Qué fuente va dónde lo decide font-family (--font-body / --font-display), no font-weight. */
+@font-face {
+  font-family: 'Refinery 35 Regular';
+  src: url('./assets/fonts/refinery-35-regular.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: normal;
+  /* swap: texto visible con la fuente de respaldo mientras descarga. */
+  font-display: swap;
+}
+
 @font-face {
   font-family: 'Refinery 35 Bold';
   src: url('./assets/fonts/refinery-35-bold.ttf') format('truetype');
   font-weight: 100 900;
   font-style: normal;
-  /* swap: texto visible con la fuente de respaldo mientras descarga. */
   font-display: swap;
 }
 
@@ -21,12 +30,15 @@
   --border: #2c343c;
   --text: #9ab;
   --text-strong: #fff;
+  --text-soft: #ccd;
 
   /* Paleta tipo Letterboxd: un color por estado de visualización. */
   --color-por-ver: #ff8000;
   --color-viendo: #40bcf4;
   --color-vista: #00e054;
   --color-error: #ff6b6b;
+  /* Dorado para estrellas: distinto de los tres colores de estado. */
+  --color-estrella: #f5c518;
 
   --radius: 6px;
   /* Radio único para todos los botones cuadrados con ícono (squircle). */
@@ -35,9 +47,14 @@
   --card-width: 150px;
   --page-width: 1100px;
 
-  /* Los inputs, selects y botones heredan esta familia vía `font: inherit`. */
-  font-family: 'Refinery 35 Bold', system-ui, 'Segoe UI', Roboto, sans-serif;
-  /* Sin negritas/cursivas sintéticas: solo existe este archivo. */
+  /* Regular para todo el texto; bold (display) solo para h1, h2, pills y chips de filtro. */
+  --font-body: 'Refinery 35 Regular', system-ui, 'Segoe UI', Roboto, sans-serif;
+  --font-display: 'Refinery 35 Bold', 'Refinery 35 Regular', system-ui, 'Segoe UI', Roboto,
+    sans-serif;
+
+  /* Los inputs y selects heredan esta familia vía `font: inherit`. */
+  font-family: var(--font-body);
+  /* Sin negritas/cursivas sintéticas: solo existen estos dos archivos. */
   font-synthesis: none;
   color-scheme: dark;
 }
@@ -65,6 +82,12 @@ h1,
 h2,
 h3 {
   color: var(--text-strong);
+}
+
+/* La bold es solo para h1 y h2; h3 y el resto usan la regular. */
+h1,
+h2 {
+  font-family: var(--font-display);
 }
 
 a {
@@ -106,6 +129,11 @@ a {
   background: var(--surface);
 }
 
+.btn--danger {
+  background: var(--color-error);
+  color: var(--bg);
+}
+
 .field {
   display: flex;
   flex-direction: column;
@@ -114,7 +142,8 @@ a {
 }
 
 .field input,
-.filters__sort select {
+.filters__sort select,
+.comment__input {
   border: 1px solid var(--border);
   border-radius: var(--radius);
   background: var(--surface);
@@ -124,7 +153,8 @@ a {
 }
 
 .field input:focus,
-.filters__sort select:focus {
+.filters__sort select:focus,
+.comment__input:focus {
   outline: 2px solid var(--color-viendo);
   outline-offset: 1px;
 }
@@ -279,6 +309,7 @@ a {
   gap: 6px;
   border-radius: 999px;
   padding: 6px 14px;
+  font-family: var(--font-display);
   font-size: 0.875rem;
   /* currentColor + color-mix: cada pill tiñe su fondo con su propio color. */
   background: color-mix(in srgb, currentColor 15%, transparent);
@@ -298,6 +329,40 @@ a {
 
 .pill--vista {
   color: var(--color-vista);
+}
+
+/* Título que no está en mi lista (detalle): pill neutra. */
+.pill--ninguna {
+  color: var(--text);
+}
+
+/* Pill del detalle como botón: mismo comportamiento que los botones de las tarjetas
+   (hover blanco, el estado final "vista" queda deshabilitado pero sin atenuarse). */
+.pill--btn {
+  border: 0;
+  /* El shorthand reinicia familia y tamaño: se vuelven a fijar para igualar a las demás pills. */
+  font: inherit;
+  font-family: var(--font-display);
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+
+.pill--btn:hover:not(:disabled) {
+  background: var(--text-strong);
+  color: var(--bg);
+}
+
+.pill--btn:disabled {
+  cursor: default;
+}
+
+.pill--btn[aria-busy='true'] {
+  opacity: 0.5;
+}
+
+.pill--btn:focus-visible {
+  outline: 2px solid var(--text-strong);
+  outline-offset: 2px;
 }
 
 /* Filtros */
@@ -322,6 +387,7 @@ a {
   color: var(--text);
   padding: 6px 14px;
   font: inherit;
+  font-family: var(--font-display);
   font-size: 0.875rem;
   cursor: pointer;
 }
@@ -425,6 +491,26 @@ a {
   );
   opacity: 0;
   transition: opacity 0.15s ease;
+  /* Encima del link de la tarjeta pero "transparente" al clic: solo los botones lo capturan. */
+  z-index: 2;
+  pointer-events: none;
+}
+
+.card__actions .icon-btn {
+  pointer-events: auto;
+}
+
+/* Link que cubre toda la tarjeta y lleva al detalle. */
+.card__link {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+.card__link:focus-visible {
+  outline: 2px solid var(--text-strong);
+  outline-offset: -2px;
+  border-radius: var(--radius);
 }
 
 .card:hover .card__overlay,
@@ -541,7 +627,8 @@ a {
 /* Un solo estado de carga para las dos fases: esqueleto mientras llegan los datos
    (--skeleton) y póster aún descargándose (--cargando). Barrido de luz sobre el fondo. */
 .card--skeleton,
-.card--cargando {
+.card--cargando,
+.skeleton {
   background: linear-gradient(
     100deg,
     var(--surface) 30%,
@@ -563,7 +650,8 @@ a {
 
 @media (prefers-reduced-motion: reduce) {
   .card--skeleton,
-  .card--cargando {
+  .card--cargando,
+  .skeleton {
     animation: none;
   }
 }
@@ -589,4 +677,273 @@ a {
 
 .search__more {
   align-self: center;
+}
+
+/* ---------- Detalle ---------- */
+.detail {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding-top: 24px;
+}
+
+.detail__back {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  gap: 6px;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  padding: 4px 0;
+  font: inherit;
+  cursor: pointer;
+}
+
+.detail__back:hover {
+  color: var(--text-strong);
+}
+
+/* Dos columnas: póster + nota a la izquierda, contenido a la derecha. */
+.detail__layout {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 40px;
+  align-items: start;
+}
+
+.detail__side {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.detail__poster {
+  display: block;
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  object-fit: cover;
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.detail__poster--empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text);
+}
+
+.detail__rating {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.detail__label,
+.detail__heading {
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text);
+}
+
+.detail__rating-text {
+  font-size: 0.875rem;
+}
+
+/* El gap de .detail__main es el "spacer" entre bloques (28px); dentro de cada bloque
+   los elementos van más juntos (6-12px) para que se lean como un grupo. */
+.detail__main {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  min-width: 0;
+}
+
+.detail__head {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.detail__title {
+  font-size: clamp(1.75rem, 4vw, 2.75rem);
+  line-height: 1.1;
+}
+
+.detail__credits {
+  font-size: 1.0625rem;
+}
+
+.detail__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 16px;
+}
+
+.detail__synopsis {
+  max-width: 65ch;
+  color: var(--text-soft);
+  line-height: 1.65;
+}
+
+.detail__section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.detail__cast {
+  max-width: 65ch;
+  color: var(--text-soft);
+  line-height: 1.6;
+}
+
+.detail__hint {
+  font-size: 0.875rem;
+}
+
+/* Califícala: mismas estrellas que la nota general pero más grandes y clicables. */
+.rating-input {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+}
+
+.rating-input__stars {
+  display: flex;
+  gap: 4px;
+}
+
+.rating-input__star {
+  display: block;
+  border: 0;
+  background: transparent;
+  padding: 2px;
+  color: var(--surface-highlight);
+  cursor: pointer;
+}
+
+.rating-input__star[data-activa='true'] {
+  color: var(--color-estrella);
+}
+
+.rating-input__star:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+
+.rating-input__star:focus-visible {
+  outline: 2px solid var(--text-strong);
+  outline-offset: 2px;
+  border-radius: var(--radius);
+}
+
+.rating-input__star svg {
+  display: block;
+}
+
+.rating-input__text {
+  font-size: 0.875rem;
+}
+
+/* Mi comentario */
+.comment {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 65ch;
+}
+
+.comment__input {
+  width: 100%;
+  resize: vertical;
+  min-height: 96px;
+  line-height: 1.5;
+}
+
+.comment__footer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.comment__status {
+  font-size: 0.875rem;
+  color: var(--color-vista);
+}
+
+/* Confirmación inline al quitar un título de mi lista. */
+.confirm {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 10px;
+}
+
+.confirm__text {
+  font-size: 0.875rem;
+}
+
+/* Estrellas: cada una es una caja fija de ícono con la vacía debajo y la llena encima,
+   recortada a su propia fracción. width: max-content + align-self evitan que un contenedor
+   flex la estire (lo estiraba a 300px y llenaba las 5 estrellas siempre). */
+.stars {
+  display: flex;
+  gap: 4px;
+  align-self: flex-start;
+  width: max-content;
+}
+
+.stars__star {
+  position: relative;
+  flex: none;
+  width: 22px;
+  height: 22px;
+  color: var(--surface-highlight);
+}
+
+.stars__star svg {
+  display: block;
+}
+
+.stars__fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  overflow: hidden;
+  color: var(--color-estrella);
+}
+
+/* Placeholders del detalle mientras carga (mismo shimmer que las tarjetas). */
+.skeleton {
+  border-radius: var(--radius);
+}
+
+.skeleton--title {
+  height: 48px;
+  max-width: 420px;
+}
+
+.skeleton--line {
+  height: 20px;
+  max-width: 260px;
+}
+
+.skeleton--block {
+  height: 120px;
+  max-width: 65ch;
+}
+
+@media (max-width: 720px) {
+  .detail__layout {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+
+  .detail__side {
+    max-width: 240px;
+  }
 }
