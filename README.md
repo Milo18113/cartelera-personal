@@ -4,8 +4,7 @@ Aplicación web donde cada usuario registra, organiza y califica las películas 
 
 Proyecto de la materia Desarrollo Web 2 (USFQ), Enregable 3.
 
-<!-- Si se publica la app, pegar aquí el enlace. -->
-**Demo en vivo:** _(pendiente)_
+**Demo en vivo:** [cartelera-personal-brown.vercel.app](https://cartelera-personal-brown.vercel.app)
 
 ## Tecnologías
 
