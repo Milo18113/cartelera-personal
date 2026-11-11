@@ -49,8 +49,23 @@
 
   /* Regular para todo el texto; bold (display) solo para h1, h2, pills y chips de filtro. */
   --font-body: 'Refinery 35 Regular', system-ui, 'Segoe UI', Roboto, sans-serif;
-  --font-display: 'Refinery 35 Bold', 'Refinery 35 Regular', system-ui, 'Segoe UI', Roboto,
-    sans-serif;
+  --font-display:
+    'Refinery 35 Bold', 'Refinery 35 Regular', system-ui, 'Segoe UI', Roboto, sans-serif;
+
+  /* Escala tipográfica: toda la app sale de estas dos variables. Cambiar --font-base mueve
+     todos los tamaños; cambiar --font-ratio abre o cierra la distancia entre pasos.
+     Las reglas usan solo los --fs-*, nunca un tamaño literal. El prefijo es --fs- porque
+     --text, --text-strong y --text-soft ya son colores. */
+  --font-base: 0.875rem;
+  --font-ratio: 1.2;
+  --fs-sm: calc(var(--font-base) / var(--font-ratio));
+  --fs-base: var(--font-base);
+  --fs-md: calc(var(--fs-base) * var(--font-ratio));
+  --fs-lg: calc(var(--fs-md) * var(--font-ratio));
+  --fs-xl: calc(var(--fs-lg) * var(--font-ratio));
+  --fs-2xl: calc(var(--fs-xl) * var(--font-ratio));
+  --fs-3xl: calc(var(--fs-2xl) * var(--font-ratio));
+  --fs-4xl: calc(var(--fs-3xl) * var(--font-ratio));
 
   /* Los inputs y selects heredan esta familia vía `font: inherit`. */
   font-family: var(--font-body);
@@ -138,7 +153,7 @@ a {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  font-size: 0.875rem;
+  font-size: var(--fs-base);
 }
 
 .field input,
@@ -162,7 +177,7 @@ a {
 .alert {
   border-radius: var(--radius);
   padding: 8px 12px;
-  font-size: 0.875rem;
+  font-size: var(--fs-base);
 }
 
 .alert--error {
@@ -189,7 +204,7 @@ a {
 
 .auth__title {
   text-align: center;
-  font-size: 1.75rem;
+  font-size: var(--fs-2xl);
 }
 
 .auth__form {
@@ -200,7 +215,7 @@ a {
 
 .auth__footer {
   text-align: center;
-  font-size: 0.875rem;
+  font-size: var(--fs-base);
 }
 
 /* ---------- Layout de rutas protegidas ---------- */
@@ -222,7 +237,7 @@ a {
 
 .app__brand {
   color: var(--text-strong);
-  font-size: 1.125rem;
+  font-size: var(--fs-md);
   font-weight: 600;
   text-decoration: none;
   white-space: nowrap;
@@ -261,7 +276,7 @@ a {
   display: flex;
   align-items: center;
   gap: 12px;
-  font-size: 0.875rem;
+  font-size: var(--fs-base);
 }
 
 @media (max-width: 640px) {
@@ -290,7 +305,7 @@ a {
 }
 
 .home__title {
-  font-size: clamp(1.5rem, 4vw, 2.25rem);
+  font-size: clamp(var(--fs-xl), 4vw, var(--fs-3xl));
 }
 
 /* Pills de resumen */
@@ -310,7 +325,7 @@ a {
   border-radius: 999px;
   padding: 6px 14px;
   font-family: var(--font-display);
-  font-size: 0.875rem;
+  font-size: var(--fs-base);
   /* currentColor + color-mix: cada pill tiñe su fondo con su propio color. */
   background: color-mix(in srgb, currentColor 15%, transparent);
 }
@@ -343,7 +358,7 @@ a {
   /* El shorthand reinicia familia y tamaño: se vuelven a fijar para igualar a las demás pills. */
   font: inherit;
   font-family: var(--font-display);
-  font-size: 0.875rem;
+  font-size: var(--fs-base);
   cursor: pointer;
 }
 
@@ -388,7 +403,7 @@ a {
   padding: 6px 14px;
   font: inherit;
   font-family: var(--font-display);
-  font-size: 0.875rem;
+  font-size: var(--fs-base);
   cursor: pointer;
 }
 
@@ -407,7 +422,7 @@ a {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 0.875rem;
+  font-size: var(--fs-base);
 }
 
 .filters__sort select {
@@ -424,7 +439,7 @@ a {
 .row__title {
   padding-bottom: 6px;
   border-bottom: 1px solid var(--border);
-  font-size: 0.875rem;
+  font-size: var(--fs-base);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--text);
@@ -440,7 +455,7 @@ a {
 
 .row__message {
   padding: 16px 0;
-  font-size: 0.875rem;
+  font-size: var(--fs-base);
 }
 
 .row__message--error {
@@ -471,7 +486,7 @@ a {
   justify-content: center;
   padding: 12px;
   text-align: center;
-  font-size: 0.875rem;
+  font-size: var(--fs-base);
 }
 
 /* Overlay encima del póster: acciones arriba, info abajo. */
@@ -604,7 +619,7 @@ a {
 }
 
 .card__title {
-  font-size: 0.8125rem;
+  font-size: var(--fs-base);
   line-height: 1.25;
 }
 
@@ -613,7 +628,7 @@ a {
   align-items: center;
   gap: 8px;
   margin-top: 2px;
-  font-size: 0.75rem;
+  font-size: var(--fs-sm);
   color: #ccd;
 }
 
@@ -665,7 +680,7 @@ a {
 }
 
 .search__title {
-  font-size: clamp(1.25rem, 3vw, 1.75rem);
+  font-size: clamp(var(--fs-lg), 3vw, var(--fs-2xl));
 }
 
 /* Grilla (no fila): las tarjetas llenan el ancho y saltan de línea. */
@@ -742,14 +757,14 @@ a {
 
 .detail__label,
 .detail__heading {
-  font-size: 0.75rem;
+  font-size: var(--fs-sm);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--text);
 }
 
 .detail__rating-text {
-  font-size: 0.875rem;
+  font-size: var(--fs-base);
 }
 
 /* El gap de .detail__main es el "spacer" entre bloques (28px); dentro de cada bloque
@@ -768,12 +783,12 @@ a {
 }
 
 .detail__title {
-  font-size: clamp(1.75rem, 4vw, 2.75rem);
+  font-size: clamp(var(--fs-2xl), 4vw, var(--fs-4xl));
   line-height: 1.1;
 }
 
 .detail__credits {
-  font-size: 1.0625rem;
+  font-size: var(--fs-md);
 }
 
 .detail__meta {
@@ -802,7 +817,7 @@ a {
 }
 
 .detail__hint {
-  font-size: 0.875rem;
+  font-size: var(--fs-base);
 }
 
 /* Califícala: mismas estrellas que la nota general pero más grandes y clicables. */
@@ -847,7 +862,7 @@ a {
 }
 
 .rating-input__text {
-  font-size: 0.875rem;
+  font-size: var(--fs-base);
 }
 
 /* Mi comentario */
@@ -872,7 +887,7 @@ a {
 }
 
 .comment__status {
-  font-size: 0.875rem;
+  font-size: var(--fs-base);
   color: var(--color-vista);
 }
 
@@ -885,7 +900,7 @@ a {
 }
 
 .confirm__text {
-  font-size: 0.875rem;
+  font-size: var(--fs-base);
 }
 
 /* Estrellas: cada una es una caja fija de ícono con la vacía debajo y la llena encima,
