@@ -2,7 +2,7 @@
 
 Aplicación web donde cada usuario registra, organiza y califica las películas y series que quiere ver, está viendo o ya vio. Busca títulos reales en la API de [The Movie Database (TMDB)](https://www.themoviedb.org/) (póster, sinopsis, reparto, calificación oficial) y guarda su propia versión —estado, calificación y comentario personal— en una base de datos PostgreSQL de Supabase, protegida por autenticación y Row Level Security.
 
-Proyecto de la materia Desarrollo Web 2 (USFQ), Enregable 3.
+Proyecto de la materia Desarrollo Web 2 (USFQ). El Entregable 3 construyó la lista personal; el Entregable 4 le suma **Noche de película**, descrita [más abajo](#noche-de-película-entregable-4).
 
 **Demo en vivo:** [cartelera-personal-brown.vercel.app](https://cartelera-personal-brown.vercel.app)
 
@@ -16,6 +16,9 @@ Proyecto de la materia Desarrollo Web 2 (USFQ), Enregable 3.
 | Autenticación | Supabase Auth | Registro, login, logout y sesión persistente |
 | Base de datos | Supabase (PostgreSQL) | Tabla `mi_lista` con políticas RLS por usuario |
 | Estilos | CSS plano (una sola hoja) | `src/index.css` |
+| Pruebas | Vitest | Tests de la regla de negocio de Noche de película, sin base de datos ni red |
+| Formato | Prettier | Lo aplica un hook del agente a cada archivo que edita |
+| Agente | Claude Code | Desarrollo guiado por specs; ver [Harness del agente](#harness-del-agente) |
 
 ## Funcionalidades
 
@@ -27,6 +30,43 @@ Proyecto de la materia Desarrollo Web 2 (USFQ), Enregable 3.
 - **Resumen y filtros:** contador de pendientes, en progreso y vistas; filtro por estado y orden por fecha o calificación.
 - **Recomendaciones:** fila de películas populares de TMDB elegidas al azar, sin los títulos que ya guardaste.
 - **Seguridad real (RLS):** cada usuario solo ve, edita y borra sus propias filas, verificado contra la base de datos.
+
+## Noche de película (Entregable 4)
+
+Cuando tienes un rato libre, dices cuánto tiempo tienes y la app te muestra qué películas de tu lista «por ver» caben. Con ellas armas una sesión y la guardas para esa noche.
+
+**Cómo se usa**
+
+1. Entra a **Noche de película** (enlace del encabezado, ruta `/noche`).
+2. Escribe tu tiempo en minutos: un número entero de 30 a 600.
+3. Agrega las películas que quieras. Ves en todo momento la duración total y el tiempo que te queda.
+4. Guarda la sesión con un nombre (opcional). Las consultas en **Mis sesiones** (`/noche/sesiones`).
+
+**Reglas** (completas en el [PRD](docs/prd/PRD.md))
+
+- Solo cuentan las películas de tu lista en estado «por ver»; las series no.
+- La duración viene de TMDB. Una película sin duración conocida no se puede agregar y la app explica por qué.
+- Hay 10 minutos de pausa entre una película y la siguiente; ninguna antes de la primera ni después de la última.
+- Una sesión cabe si la suma de duraciones más las pausas no supera tu tiempo. Ocupar exactamente el tiempo sí cabe.
+- Guardar una sesión no cambia el estado de sus películas.
+
+**Decisiones** ([PRD](docs/prd/PRD.md), sección 8): una película puede estar en varias sesiones; las que caben se ordenan de la más antigua en tu lista a la más reciente; una sesión guardada no se modifica ni se elimina y conserva una copia de cada película, así que quitar una película de tu lista no la cambia; cada sesión tiene nombre opcional («Noche del 11 de nov» por defecto) y fecha de creación.
+
+**Datos y seguridad.** Dos tablas nuevas, `sesiones` y `sesion_peliculas` ([`docs/migrations/001_sesiones.sql`](docs/migrations/001_sesiones.sql)). Cada persona solo lee y crea lo suyo (RLS), y no hay políticas de modificar ni de eliminar. El guardado es una función SQL que escribe la sesión y todas sus películas en una sola transacción: o se guarda completa o no se guarda. La prueba con dos cuentas está en [`scripts/test-rls-sesiones.ts`](scripts/test-rls-sesiones.ts).
+
+**Dónde está el código**
+
+```
+src/domain/nochePelicula.ts   la regla de «cabe» (funciones puras, con tests)
+src/domain/candidatas.ts      qué películas se ofrecen y en qué orden
+src/domain/sesion.ts          armar y guardar una sesión, nombre por defecto
+src/infrastructure/           duración en TMDB y servicio de sesiones en Supabase
+src/hooks/                    useDuraciones, useSesionEnArmado, useGuardarSesion, ...
+src/components/noche/         componentes de la pantalla
+src/pages/                    NochePage, SesionesPage, SesionDetailPage
+```
+
+La demo en vivo corresponde al Entregable 3: Noche de película todavía no está desplegada.
 
 ## Capturas
 
@@ -70,6 +110,7 @@ npm install
 
 1. Crea un proyecto en Supabase.
 2. En **SQL Editor**, pega y ejecuta [`docs/schema.sql`](docs/schema.sql). Crea la tabla `mi_lista`, activa RLS y define las 4 políticas.
+   Para Noche de película, ejecuta después [`docs/migrations/001_sesiones.sql`](docs/migrations/001_sesiones.sql): crea las tablas de sesiones, su RLS y la función `guardar_sesion`.
 3. En **Authentication → Sign In / Providers → Email**, desactiva **Confirm email** para desarrollar y probar (con la confirmación activa, el registro no inicia sesión hasta confirmar el correo).
 4. En **Authentication → URL Configuration**, pon `http://localhost:5173` como Site URL.
 
@@ -96,9 +137,21 @@ npm run dev       # servidor de desarrollo en http://localhost:5173
 npm run build     # typecheck + build de producción en dist/
 npm run preview   # sirve el build localmente
 npm run lint      # ESLint
+npm test          # tests de la regla de negocio (Vitest)
 ```
 
 Reinicia `npm run dev` si cambias el `.env`: Vite solo lo lee al arrancar.
+
+## Pruebas
+
+| Qué | Comando | Qué comprueba |
+|---|---|---|
+| Regla de negocio | `npm test` | 103 tests de Vitest: la regla de «cabe» y sus bordes (sesión que ocupa exactamente el tiempo, una sola película, película sin duración, tiempo fuera de rango), las candidatas y su orden, armar y guardar una sesión, y el límite de consultas simultáneas. No usan red ni base de datos. |
+| Seguridad de la lista | `node --experimental-strip-types scripts/test-rls.ts` | RLS de `mi_lista` con dos cuentas (12 verificaciones). |
+| Seguridad de las sesiones | `node --experimental-strip-types scripts/test-rls-sesiones.ts` | Con dos cuentas: privacidad, solo lectura, no falsificar al dueño, guardado atómico y límites (26 verificaciones). Como las sesiones no se pueden eliminar, imprime el SQL para borrar los usuarios de prueba. |
+| Navegador | [`docs/VERIFICACION.md`](docs/VERIFICACION.md) | Cada criterio con sus pasos y su resultado obtenido. |
+
+Los resultados criterio por criterio, y lo que aún falta verificar, están en [`docs/AUDITORIA.md`](docs/AUDITORIA.md).
 
 ## Estructura del proyecto
 
@@ -214,6 +267,28 @@ Al terminar, el script borra sus propias filas. Los usuarios de prueba quedan en
 ```sql
 delete from auth.users where email like 'rls-test-%@example.com';
 ```
+
+## Harness del agente
+
+El Entregable 4 se desarrolló con Claude Code guiado por specs. El entorno del agente vive en el repositorio:
+
+- [`AGENTS.md`](AGENTS.md): reglas del proyecto en 40 líneas o menos. La principal es «ninguna funcionalidad sin spec»; también las reglas de claves (TMDB y Supabase solo en variables de entorno), las capas y el estilo de código.
+- [`CLAUDE.md`](CLAUDE.md): importa `AGENTS.md` y agrega notas para el agente.
+- Skill `/commit` ([`.claude/skills/commit/SKILL.md`](.claude/skills/commit/SKILL.md)): el formato de los commits, con `disable-model-invocation` para que no se dispare sola. Nunca hace push.
+- Hook `PostToolUse` ([`.claude/settings.json`](.claude/settings.json) y [`.claude/hooks/format.mjs`](.claude/hooks/format.mjs)): formatea con Prettier cada archivo que el agente edita. La configuración está en `.prettierrc`.
+
+## Documentación del proceso
+
+El historial de git sigue el orden **harness → estado inicial → PRD → backlog → spec → código → verificación**.
+
+| Documento | Qué es |
+|---|---|
+| [`docs/ESTADO-INICIAL.md`](docs/ESTADO-INICIAL.md) | Qué hacía el Proyecto 3 antes de empezar, sus riesgos y su deuda. |
+| [`DESIGN.md`](DESIGN.md) y [brand board](docs/diseno/brand-board.html) | El sistema de diseño real de la app. |
+| [`docs/prd/PRD.md`](docs/prd/PRD.md) | El producto: problema, alcance, reglas de negocio y las decisiones del cliente. |
+| [`docs/backlog/`](docs/backlog/) | Historias con sus criterios, el refinamiento con la IA y los tickets. |
+| [`docs/specs/spec-e2-noche-de-pelicula.md`](docs/specs/spec-e2-noche-de-pelicula.md) | Cómo se construye: datos, funciones puras, servicios, interfaz y verificación. |
+| [`docs/VERIFICACION.md`](docs/VERIFICACION.md) y [`docs/AUDITORIA.md`](docs/AUDITORIA.md) | Cómo se comprobó y con qué resultado. |
 
 ## Créditos
 
