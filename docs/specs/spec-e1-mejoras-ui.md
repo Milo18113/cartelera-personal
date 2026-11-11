@@ -30,6 +30,12 @@ article.card                       (columna)
 - **Título:** `-webkit-line-clamp: 2`; el alto del bloque de información es el mismo en todas las tarjetas de una fila (reserva dos líneas).
 - El overlay conserva el degradado solo arriba y abajo para dar contraste a los botones; en pantallas sin hover (`hover: none`) sigue siempre visible.
 
+### Actualización 2026-11-11 de E1-D01 — el título ya no reserva dos líneas
+
+- `.card__title` pierde el `min-height` de dos líneas. Conserva `-webkit-line-clamp: 2`: el máximo sigue siendo dos líneas con puntos suspensivos.
+- Lo que sustituye a la reserva: la alineación entre tarjetas depende solo de los pósters (`card__media` fija la proporción 2:3), que quedan alineados arriba y con el mismo alto. El bloque `card__info` mide lo que mida su contenido.
+- Efecto en la nota de arriba («el alto del bloque de información es el mismo en todas las tarjetas»): ya no se cumple y no se busca. Criterios E1-D01-C9 y E1-D01-C10.
+
 ## E1-D02 — Selector de estado
 
 **Dominio (`src/domain/miLista.ts`).** Se eliminan `SIGUIENTE_ESTADO` y `siguienteEstado`. Se agrega:
@@ -67,6 +73,28 @@ interface EstadoSelectProps {
 **Detalle.** La pill-botón se reemplaza por `EstadoSelect` (variante `detalle`). Sigue deshabilitado mientras la lista carga o falla, para no insertar un título dos veces.
 
 **Limpieza.** Se eliminan `src/components/etiquetasEstado.ts`, la variante botón de `EstadoPill` (queda solo informativa, la usa `StatPills`) y las reglas `.pill--btn*` de `index.css`.
+
+### Actualización 2026-11-11 de E1-D02 — el selector solo en el detalle
+
+Lo anterior describe lo construido primero y se conserva. Esta actualización cambia **solo las tarjetas** (decisiones y criterios en el [ticket](../backlog/tickets-e1-mejoras-ui.md)); el detalle no cambia.
+
+- **`CardActions`** deja de recibir el estado. Pasa a `{ enLista: boolean, titulo, busy, onAgregar, onEliminar }` y dibuja **un solo botón** `icon-btn` en `card__actions` (arriba a la derecha): la papelera (`Trash2`, `icon-btn--eliminar`) si el título está en mi lista, o el «+» (`Plus`) si no. Cada uno con `aria-label` que nombra el título («Agregar “Dune” a pendientes», «Quitar “Dune” de mi lista»), `title` y `aria-busy` y `disabled` mientras hay una petición en curso.
+- **`useAccionesTarjeta`** suma `onAgregar(pelicula)`: agrega con estado `'por_ver'` y confirma con `mensajeAgregada(titulo, 'por_ver')`. `onCambiarEstado` se queda, porque lo usa el detalle; `onEliminar` no cambia.
+- **`MovieCardWithActions`, `MovieRow`, `HomePage` y `SearchPage`** reciben y pasan `onAgregar` en lugar de `onCambiarEstado`.
+- **`EstadoSelect`** pierde la prop `variante` (solo queda el uso del detalle) y se eliminan la clase `estado-select--tarjeta` y `.card__estado`. Su tamaño de texto pasa a la regla base `.estado-select`.
+- **Overlay.** Sin el selector abajo, el degradado oscuro del pie del póster ya no sirve: queda solo el de arriba, que da contraste al botón.
+- **Dominio sin cambios:** `decidirCambioEstado` sigue en uso por el detalle.
+
+Criterios nuevos (E1-D02-C1 a C8 siguen vigentes para el selector del detalle):
+
+| Id | Criterio (resumen) | Verificación |
+| --- | --- | --- |
+| E1-D02-C9 | Una tarjeta de un título fuera de mi lista (inicio o búsqueda) tiene «+» y no tiene selector. | Navegador |
+| E1-D02-C10 | «+» agrega el título como «por ver»: aparece en «Agregadas recientemente» y en «Pendientes», y la tarjeta pasa a mostrar la papelera. | Navegador |
+| E1-D02-C11 | Una tarjeta de un título de mi lista tiene solo la papelera. | Navegador |
+| E1-D02-C12 | La papelera quita el título y, en la búsqueda, la tarjeta vuelve a mostrar «+». | Navegador |
+| E1-D02-C13 | Con una acción en curso el botón de esa tarjeta no se puede usar. | Navegador |
+| E1-D02-C14 | El detalle conserva el selector de estado con los tres estados. | Navegador |
 
 ## E1-D03 — Snackbar de notificaciones
 
@@ -159,6 +187,8 @@ Los ids numeran los criterios de cada ticket, en el orden en que están escritos
 | E1-D01-C6 | Con mouse o teclado, aparecen las acciones sobre el póster. | Navegador |
 | E1-D01-C7 | En pantalla táctil las acciones están visibles sin hover. | Navegador (emulación) |
 | E1-D01-C8 | Click en el póster o en el título lleva al detalle. | Navegador |
+| E1-D01-C9 | Un título de una línea no reserva el espacio de una segunda. | Navegador |
+| E1-D01-C10 | En una fila con títulos de una y dos líneas, los pósters quedan alineados arriba y con el mismo alto. | Navegador |
 | E1-D02-C1 | Un título fuera de mi lista se agrega con el estado que elijo. | Vitest (`decidirCambioEstado`) y Navegador |
 | E1-D02-C2 | Un título en «vista» puede pasar a «en progreso» o «pendiente» y cambia de fila. | Vitest y Navegador |
 | E1-D02-C3 | Elegir el estado actual no hace ninguna petición. | Vitest |
@@ -185,6 +215,21 @@ Los ids numeran los criterios de cada ticket, en el orden en que están escritos
 | E1-D04-C8 | Con Tab y Enter sobre una flecha la fila se desplaza; cada flecha tiene nombre accesible. | Navegador |
 | E1-D04-C9 | Un click en una flecha no abre el detalle de la tarjeta de abajo. | Navegador |
 | E1-D04-C10 | Al cambiar el tamaño de la ventana las flechas se actualizan. | Navegador |
+| E1-D04-C11 | Con teclado, al llegar al extremo el foco pasa a la flecha contraria y no se pierde. | Navegador |
+| E1-D04-C12 | Con «Agregadas recientemente» desplazada, agregar un título nuevo devuelve la fila al inicio y se ve la tarjeta nueva. | Vitest (`llegoNuevaAlInicio`) y Navegador |
+| E1-D04-C13 | Quitar una tarjeta de una fila desplazada no la devuelve al inicio. | Vitest y Navegador |
+
+**Actualización 2026-11-11 de E1-D04 — foco.** El hook también devuelve `anteriorRef` y `siguienteRef` (funciones de ref, como `pistaRef`) y recuerda cuál fue la última flecha usada. Cuando esa flecha desaparece porque se llegó a ese extremo, y el foco quedó en el `body` (se perdió), lo pasa a la flecha contraria. Si el foco está en otro control, no lo toca.
+
+**Actualización 2026-11-11 (2) de E1-D04 — volver al inicio.** Dominio nuevo en `domain/fila.ts`:
+
+```ts
+// ¿Llegó una tarjeta nueva al principio de la fila? Cuenta solo si la primera de ahora no estaba
+// antes: si la primera cambia porque se quitó la que estaba, o por un reorden, no hay nada nuevo.
+export function llegoNuevaAlInicio(clavesAntes: readonly string[], clavesAhora: readonly string[]): boolean
+```
+
+`useFilaDesplazable` recibe las claves de las tarjetas de la fila, recuerda las anteriores y, cuando `llegoNuevaAlInicio` es verdadero, lleva la pista a `scrollLeft: 0` (suave, o inmediato con `prefers-reduced-motion`). `MovieRow` le pasa `peliculas.map(p => p.clave)`. Casos de Vitest: llega una nueva al inicio (sí); sin cambios (no); se quita la primera (no); reorden (no); se agrega al final (no); lista vacía ahora (no); primera carga con la fila vacía antes (sí, sin efecto visible: ya está en 0).
 
 Criterios de interfaz de [`DESIGN.md`](../../DESIGN.md) que aplican a todo lo nuevo: DS-01 a DS-12.
 

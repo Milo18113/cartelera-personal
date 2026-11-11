@@ -51,6 +51,18 @@ La información sale del overlay y pasa a un bloque fijo debajo del póster. El 
 
 **Dependencias:** ninguna.
 
+### Actualización 2026-11-11 — el título ya no reserva dos líneas
+
+Decisión de Milo al revisar las tarjetas en el navegador: el título deja de reservar siempre el alto de dos líneas (`min-height` en `.card__title`). Se mantiene el máximo de dos líneas con puntos suspensivos.
+
+| Decisión | Origen |
+| --- | --- |
+| Un título de una línea ocupa solo una línea; el bloque de información de esa tarjeta es más bajo | Criterio propio: la reserva dejaba un hueco vacío bajo la mayoría de los títulos |
+| El «alineadas» del criterio de títulos largos pasa a referirse a los pósters: siguen alineados arriba y con el mismo alto; la información debajo ya no tiene el mismo alto en todas | Consecuencia de la decisión anterior |
+
+- [ ] DADO un título de una sola línea, CUANDO se muestra su tarjeta, ENTONCES el bloque de información no reserva el espacio de una segunda línea.
+- [ ] DADO una fila con títulos de una y de dos líneas, CUANDO se muestra, ENTONCES los pósters quedan alineados arriba y con el mismo alto.
+
 ---
 
 ## E1-D02 — Selector de estado en lugar del botón de avanzar
@@ -90,6 +102,34 @@ El botón que avanza el estado se reemplaza por un selector (`<select>` nativo) 
 - `npm run build` y `npm run lint` sin errores; sin `any`.
 
 **Dependencias:** E1-D01 (el selector vive en el overlay rediseñado de la tarjeta).
+
+### Actualización 2026-11-11 — el selector pasa solo al detalle; las tarjetas alternan «+» y papelera
+
+Todo lo anterior se conserva como registro de lo que se construyó y se probó. Al verlo funcionando se decidió simplificar las tarjetas, así que esta actualización **reemplaza lo anterior solo en las tarjetas del inicio y de la búsqueda**. En el detalle el selector sigue exactamente igual.
+
+| Decisión | Origen |
+| --- | --- |
+| El selector de estado deja de estar en las tarjetas (inicio y búsqueda); sigue en el detalle | Pedido de Milo |
+| Una tarjeta de un título fuera de mi lista muestra un botón «+» que lo agrega como «por ver»: así aparece en «Agregadas recientemente» y en «Pendientes» | Pedido de Milo |
+| Una tarjeta de un título de mi lista muestra solo la papelera. El «+» y la papelera ocupan el mismo lugar (arriba a la derecha) y uno reemplaza al otro | Pedido de Milo |
+| Cambiar el estado de un título ya agregado se hace en el detalle | Consecuencia: conserva lo que pidió el profesor (volver de «vista» a «viendo») |
+| Ambos botones son de ícono (`.icon-btn`, `Plus` y `Trash2`) con nombre accesible que nombra el título | Criterio propio: son acciones rápidas sobre el póster (`DESIGN.md` §4) |
+| El snackbar sigue confirmando: «“Dune” agregada a Pendientes» y «“Dune” quitada de tu lista» | Mantiene E1-D03 |
+| Quitar desde la tarjeta sigue sin pedir confirmación | Sin cambios |
+
+**Criterios de aceptación de la actualización.** Se suman a los anteriores. Los de selector en tarjetas (primeros ocho) siguen vigentes solo para el selector del **detalle**; en las tarjetas los reemplazan estos.
+
+- [ ] DADO una tarjeta de un título que no está en mi lista, en el inicio o en la búsqueda, CUANDO la veo, ENTONCES tiene un botón «+» y no tiene selector de estado.
+- [ ] DADO esa tarjeta, CUANDO pulso «+», ENTONCES el título se agrega como «por ver», aparece en «Agregadas recientemente» y en «Pendientes», y la tarjeta pasa a mostrar la papelera.
+- [ ] DADO una tarjeta de un título de mi lista, CUANDO la veo, ENTONCES tiene solo la papelera: ni «+» ni selector.
+- [ ] DADO esa tarjeta, CUANDO pulso la papelera, ENTONCES el título se quita de mi lista y, si la tarjeta sigue a la vista (búsqueda), vuelve a mostrar «+».
+- [ ] DADO una acción en curso sobre un título, CUANDO espero la respuesta, ENTONCES el botón de esa tarjeta no se puede usar.
+- [ ] DADO el detalle de un título, CUANDO lo abro, ENTONCES conserva el selector de estado con los tres estados.
+
+**Definition of Done de la actualización**
+- El selector de la tarjeta (su variante `tarjeta` y las reglas `.card__estado`) no queda como código muerto: se elimina.
+- Criterios comprobados en el navegador.
+- `npm run build` y `npm run lint` sin errores; sin `any`.
 
 ---
 
@@ -175,6 +215,30 @@ Las filas del inicio ocultan la barra de scroll horizontal y muestran dos botone
 - `npm run build` y `npm run lint` sin errores; sin `any`.
 
 **Dependencias:** E1-D01 (las flechas se centran en el póster de la tarjeta rediseñada).
+
+### Actualización 2026-11-11 — el foco no se pierde al llegar al extremo
+
+Hallazgo de la prueba en un navegador real: como la flecha del extremo se **omite** (no se deshabilita), con el teclado la flecha que tenía el foco desaparecía al llegar al final y el foco se perdía (pasaba al `body`), dejando a la persona sin dónde continuar. Lo anterior se conserva; se agrega:
+
+| Decisión | Origen |
+| --- | --- |
+| Si la flecha que tiene el foco desaparece porque se llegó a ese extremo, el foco pasa a la flecha contraria | Hallazgo de la prueba; patrón habitual en carruseles |
+| Solo se mueve el foco si se perdió (quedó en el `body`): si la persona ya se fue a otro control, no se le quita | Criterio propio |
+
+- [ ] DADO el teclado, CUANDO uso una flecha hasta llegar al extremo de la fila, ENTONCES el foco pasa a la flecha contraria y no se pierde.
+
+### Actualización 2026-11-11 (2) — la fila vuelve al inicio cuando llega una tarjeta nueva
+
+Pedido de Milo: al agregar un título, entra primero en «Agregadas recientemente»; si la fila estaba desplazada, la tarjeta nueva quedaba fuera de la vista. Se agrega:
+
+| Decisión | Origen |
+| --- | --- |
+| Cuando aparece una tarjeta **nueva** al principio de una fila, la fila vuelve al inicio (con desplazamiento suave, o inmediato con `prefers-reduced-motion`) | Pedido de Milo |
+| Una tarjeta es «nueva» si la primera de ahora no estaba antes en la fila. Si la primera cambia porque se quitó la que estaba, o porque se reordenó, no hay nada nuevo que mostrar y la fila no se mueve | Criterio propio: evita saltos que nadie pidió |
+| Vale para todas las filas, no solo «Agregadas recientemente»: es la que más lo necesita porque lo nuevo entra siempre al principio | Criterio propio: una sola regla, sin casos especiales |
+
+- [ ] DADO la fila «Agregadas recientemente» desplazada, CUANDO agrego un título nuevo, ENTONCES la fila vuelve al inicio y se ve la tarjeta nueva.
+- [ ] DADO una fila desplazada, CUANDO se quita una tarjeta, ENTONCES la fila no vuelve al inicio.
 
 ---
 
