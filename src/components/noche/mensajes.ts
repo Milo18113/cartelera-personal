@@ -69,3 +69,5 @@ export function mensajeNombreLargo(): string {
 export const MENSAJE_AGREGA_UNA = 'Agrega al menos una película para guardar.'
 export const MENSAJE_SIN_TIEMPO_GUARDAR = 'Indica un tiempo válido para guardar.'
 export const MENSAJE_GUARDADA = 'Sesión guardada.'
+export const MENSAJE_SIN_SESIONES = 'Aún no tienes sesiones guardadas.'
+export const MENSAJE_SESION_INEXISTENTE = 'No encontramos esa sesión.'

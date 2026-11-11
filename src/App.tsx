@@ -8,6 +8,8 @@ import { LoginPage } from './pages/LoginPage'
 import { NochePage } from './pages/NochePage'
 import { RegisterPage } from './pages/RegisterPage'
 import { SearchPage } from './pages/SearchPage'
+import { SesionDetailPage } from './pages/SesionDetailPage'
+import { SesionesPage } from './pages/SesionesPage'
 
 function App() {
   return (
@@ -27,6 +29,8 @@ function App() {
             <Route path="/" element={<HomePage />} />
             <Route path="/buscar" element={<SearchPage />} />
             <Route path="/noche" element={<NochePage />} />
+            <Route path="/noche/sesiones" element={<SesionesPage />} />
+            <Route path="/noche/sesiones/:id" element={<SesionDetailPage />} />
             <Route path="/titulo/:tipo/:id" element={<DetailPage />} />
           </Route>
           {/* URL desconocida → "/", que sin sesión rebota a /login. */}

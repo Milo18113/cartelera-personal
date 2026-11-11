@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { GuardarSesionForm } from '../components/noche/GuardarSesionForm'
 import { ListaCandidatas } from '../components/noche/ListaCandidatas'
 import { ListaNoDisponibles } from '../components/noche/ListaNoDisponibles'
@@ -19,6 +20,7 @@ import { nombreDemasiadoLargo, normalizarNombre, puedeGuardar } from '../domain/
 import { useDuraciones } from '../hooks/useDuraciones'
 import { useGuardarSesion } from '../hooks/useGuardarSesion'
 import { useSesionEnArmado } from '../hooks/useSesionEnArmado'
+import { rutaSesiones } from '../lib/rutas'
 import { useMiLista } from '../lista/useMiLista'
 
 const ESQUELETOS = 4
@@ -95,7 +97,12 @@ export function NochePage() {
 
   return (
     <main className="noche">
-      <h1 className="noche__title">Noche de película</h1>
+      <div className="noche__cabecera">
+        <h1 className="noche__title">Noche de película</h1>
+        <Link to={rutaSesiones()} className="btn btn--ghost">
+          Mis sesiones
+        </Link>
+      </div>
 
       <TiempoDisponibleForm
         valor={tiempoTexto}
@@ -158,7 +165,7 @@ export function NochePage() {
           <div className="noche__columna">
             {guardada && (
               <p role="status" className="alert alert--ok">
-                {MENSAJE_GUARDADA}
+                {MENSAJE_GUARDADA} <Link to={rutaSesiones()}>Ver mis sesiones</Link>
               </p>
             )}
             <SesionArmada
