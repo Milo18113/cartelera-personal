@@ -25,7 +25,7 @@ React 19 + TypeScript + Vite · Supabase (Auth y Postgres con RLS) · TMDB · CS
 - Los comentarios explican el porqué y no se borran. Tocar solo lo necesario, sin refactors ajenos.
 
 ## Comandos
-- `npm run dev` · `npm run build` (typecheck + build) · `npm run lint`
+- `npm run dev` · `npm run build` (typecheck + build) · `npm run lint` · `npm test` (Vitest)
 
 ## Git
 - Los commits los hace el agente siguiendo `.claude/skills/commit/SKILL.md`, sin esperar a que el usuario escriba `/commit`. Nunca hace push: es siempre manual.
