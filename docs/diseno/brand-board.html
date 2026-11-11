@@ -1,0 +1,1109 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Brand board — Mi Cartelera Personal</title>
+    <style>
+      /* Las fuentes se cargan desde el código de la app. Algunos navegadores (Firefox) bloquean
+       fuentes fuera de esta carpeta al abrir el archivo directo: en ese caso se ve la fuente
+       de respaldo y todo lo demás sigue igual. */
+      @font-face {
+        font-family: 'Refinery 35 Regular';
+        src: url('../../src/assets/fonts/refinery-35-regular.ttf') format('truetype');
+        font-weight: 100 900;
+        font-display: swap;
+      }
+      @font-face {
+        font-family: 'Refinery 35 Bold';
+        src: url('../../src/assets/fonts/refinery-35-bold.ttf') format('truetype');
+        font-weight: 100 900;
+        font-display: swap;
+      }
+
+      /* COPIA de los tokens de src/index.css (al 2026-11-10), igual que DESIGN.md.
+       Si cambia un token allá, se cambia aquí: los valores que se leen en la página salen de
+       este bloque, así que basta editarlo una vez. */
+      :root {
+        --bg: #14181c;
+        --surface: #1f252b;
+        --surface-highlight: #313b45;
+        --border: #2c343c;
+        --text: #9ab;
+        --text-strong: #fff;
+        --text-soft: #ccd;
+
+        --color-por-ver: #ff8000;
+        --color-viendo: #40bcf4;
+        --color-vista: #00e054;
+        --color-error: #ff6b6b;
+        --color-estrella: #f5c518;
+
+        --radius: 6px;
+        --radius-icon-btn: 10px;
+        --icon-btn-size: 36px;
+        --card-width: 150px;
+        --page-width: 1100px;
+
+        --font-body: 'Refinery 35 Regular', system-ui, 'Segoe UI', Roboto, sans-serif;
+        --font-display:
+          'Refinery 35 Bold', 'Refinery 35 Regular', system-ui, 'Segoe UI', Roboto, sans-serif;
+
+        --font-base: 0.875rem;
+        --font-ratio: 1.2;
+        --fs-sm: calc(var(--font-base) / var(--font-ratio));
+        --fs-base: var(--font-base);
+        --fs-md: calc(var(--fs-base) * var(--font-ratio));
+        --fs-lg: calc(var(--fs-md) * var(--font-ratio));
+        --fs-xl: calc(var(--fs-lg) * var(--font-ratio));
+        --fs-2xl: calc(var(--fs-xl) * var(--font-ratio));
+        --fs-3xl: calc(var(--fs-2xl) * var(--font-ratio));
+        --fs-4xl: calc(var(--fs-3xl) * var(--font-ratio));
+
+        font-family: var(--font-body);
+        font-synthesis: none;
+        color-scheme: dark;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font-size: var(--fs-base);
+        line-height: 1.5;
+        -webkit-font-smoothing: antialiased;
+      }
+      h1,
+      h2,
+      h3,
+      p {
+        margin: 0;
+      }
+      h1,
+      h2,
+      h3 {
+        color: var(--text-strong);
+      }
+      h1,
+      h2 {
+        font-family: var(--font-display);
+      }
+      code {
+        color: var(--text-soft);
+        font-size: var(--fs-sm);
+      }
+
+      /* ---------- Estructura del board ---------- */
+      .board {
+        display: flex;
+        flex-direction: column;
+        gap: 48px;
+        max-width: var(--page-width);
+        margin: 0 auto;
+        padding: 40px 16px 64px;
+      }
+      .board__head {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .board__head h1 {
+        font-size: clamp(var(--fs-xl), 4vw, var(--fs-3xl));
+      }
+      .section {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+      .section__title {
+        padding-bottom: 6px;
+        border-bottom: 1px solid var(--border);
+        font-size: var(--fs-base);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--text);
+      }
+      .section__note {
+        max-width: 65ch;
+      }
+      .demo {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 12px 16px;
+      }
+      .demo__label {
+        font-size: var(--fs-sm);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      /* ---------- Color ---------- */
+      .swatches {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 12px;
+      }
+      .swatch {
+        overflow: hidden;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        background: var(--surface);
+      }
+      .swatch__color {
+        height: 72px;
+      }
+      .swatch__body {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        padding: 10px 12px;
+        font-size: var(--fs-sm);
+      }
+      .swatch__body strong {
+        color: var(--text-strong);
+        font-weight: 400;
+      }
+
+      /* ---------- Tipografía ---------- */
+      .type-row {
+        display: grid;
+        grid-template-columns: 100px 1fr 170px;
+        align-items: baseline;
+        gap: 4px 16px;
+        padding: 10px 0;
+        border-bottom: 1px solid var(--border);
+      }
+      .type-row__sample {
+        color: var(--text-strong);
+        line-height: 1.15;
+        overflow-wrap: anywhere;
+      }
+      .type-row__size {
+        font-size: var(--fs-sm);
+        text-align: right;
+      }
+      .t-sm {
+        font-size: var(--fs-sm);
+      }
+      .t-base {
+        font-size: var(--fs-base);
+      }
+      .t-md {
+        font-size: var(--fs-md);
+      }
+      .t-lg {
+        font-size: var(--fs-lg);
+      }
+      .t-xl {
+        font-size: var(--fs-xl);
+      }
+      .t-2xl {
+        font-size: var(--fs-2xl);
+      }
+      .t-3xl {
+        font-size: var(--fs-3xl);
+      }
+      .t-4xl {
+        font-size: var(--fs-4xl);
+      }
+      .families {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 12px;
+      }
+      .family {
+        padding: 16px;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        background: var(--surface);
+      }
+      .family__sample {
+        color: var(--text-strong);
+        font-size: var(--fs-2xl);
+      }
+      .family--display .family__sample {
+        font-family: var(--font-display);
+      }
+
+      /* ---------- Íconos ---------- */
+      .icon {
+        flex: none;
+        width: 18px;
+        height: 18px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+      .icon-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: 12px;
+      }
+      .icon-cell {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+        padding: 16px 8px;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        background: var(--surface);
+        color: var(--text-strong);
+        text-align: center;
+      }
+      .icon-cell span {
+        color: var(--text);
+        font-size: var(--fs-sm);
+      }
+
+      /* ---------- Botones (copia de las reglas de src/index.css) ---------- */
+      .btn {
+        border: 1px solid transparent;
+        border-radius: var(--radius);
+        padding: 8px 14px;
+        font: inherit;
+        font-weight: 600;
+        cursor: pointer;
+      }
+      .btn:disabled {
+        opacity: 0.5;
+        cursor: default;
+      }
+      .btn--primary {
+        background: var(--color-vista);
+        color: var(--bg);
+      }
+      .btn--ghost {
+        background: transparent;
+        border-color: var(--border);
+        color: var(--text);
+      }
+      .btn--danger {
+        background: var(--color-error);
+        color: var(--bg);
+      }
+      .icon-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: var(--icon-btn-size);
+        height: var(--icon-btn-size);
+        padding: 0;
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        border-radius: var(--radius-icon-btn);
+        background: rgba(20, 24, 28, 0.72);
+        color: var(--text-strong);
+        backdrop-filter: blur(4px);
+        cursor: pointer;
+      }
+      @supports (corner-shape: squircle) {
+        .icon-btn {
+          corner-shape: squircle;
+          border-radius: calc(var(--radius-icon-btn) * 1.6);
+        }
+      }
+      .icon-btn:hover {
+        background: var(--text-strong);
+        border-color: transparent;
+        color: var(--bg);
+      }
+      .icon-btn--por_ver {
+        background: var(--color-por-ver);
+        border-color: transparent;
+        color: var(--bg);
+      }
+      .icon-btn--viendo {
+        background: var(--color-viendo);
+        border-color: transparent;
+        color: var(--bg);
+      }
+      .icon-btn--vista {
+        background: var(--color-vista);
+        border-color: transparent;
+        color: var(--bg);
+      }
+      .icon-btn--eliminar:hover {
+        background: var(--color-error);
+      }
+      .on-poster {
+        padding: 16px;
+        border-radius: var(--radius);
+        background: linear-gradient(160deg, var(--surface-highlight), var(--bg));
+      }
+
+      /* ---------- Pills, chips, campos y alertas ---------- */
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 14px;
+        border-radius: 999px;
+        font-family: var(--font-display);
+        font-size: var(--fs-base);
+        background: color-mix(in srgb, currentColor 15%, transparent);
+      }
+      .pill--por_ver {
+        color: var(--color-por-ver);
+      }
+      .pill--viendo {
+        color: var(--color-viendo);
+      }
+      .pill--vista {
+        color: var(--color-vista);
+      }
+      .pill--ninguna {
+        color: var(--text);
+      }
+      .chip {
+        padding: 6px 14px;
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        background: transparent;
+        color: var(--text);
+        font: inherit;
+        font-family: var(--font-display);
+        font-size: var(--fs-base);
+        cursor: pointer;
+      }
+      .chip[aria-pressed='true'] {
+        background: var(--text-strong);
+        border-color: var(--text-strong);
+        color: var(--bg);
+      }
+      .field {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        min-width: 240px;
+        font-size: var(--fs-base);
+      }
+      .field input,
+      .field select {
+        padding: 8px 12px;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        background: var(--surface);
+        color: var(--text-strong);
+        font: inherit;
+      }
+      .field input:focus,
+      .field select:focus {
+        outline: 2px solid var(--color-viendo);
+        outline-offset: 1px;
+      }
+      .alert {
+        padding: 8px 12px;
+        border-radius: var(--radius);
+        font-size: var(--fs-base);
+      }
+      .alert--error {
+        background: rgba(255, 107, 107, 0.12);
+        color: var(--color-error);
+      }
+      .alert--ok {
+        background: rgba(0, 224, 84, 0.12);
+        color: var(--color-vista);
+      }
+
+      /* ---------- Tarjetas y estrellas ---------- */
+      .cards {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+      }
+      .card {
+        position: relative;
+        flex: 0 0 var(--card-width);
+        aspect-ratio: 2 / 3;
+        overflow: hidden;
+        border-radius: var(--radius);
+        background: var(--surface);
+      }
+      .card__poster {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 100%;
+        padding: 12px;
+        text-align: center;
+        background: linear-gradient(160deg, var(--surface-highlight), var(--bg));
+        font-size: var(--fs-base);
+      }
+      .card__overlay {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        padding: 8px;
+        background: linear-gradient(
+          to bottom,
+          rgba(0, 0, 0, 0.55),
+          transparent 35%,
+          transparent 55%,
+          rgba(0, 0, 0, 0.85)
+        );
+      }
+      .card__actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 6px;
+      }
+      .card__title {
+        color: var(--text-strong);
+        font-size: var(--fs-base);
+        line-height: 1.25;
+      }
+      .card__meta {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 2px;
+        color: var(--text-soft);
+        font-size: var(--fs-sm);
+      }
+      .card__rating {
+        display: inline-flex;
+        align-items: center;
+        gap: 3px;
+        color: var(--color-por-ver);
+      }
+      .card__rating .icon {
+        width: 12px;
+        height: 12px;
+        fill: currentColor;
+      }
+      .card--skeleton {
+        background: linear-gradient(
+          100deg,
+          var(--surface) 30%,
+          var(--surface-highlight) 50%,
+          var(--surface) 70%
+        );
+        background-size: 250% 100%;
+        animation: shimmer 1.4s linear infinite;
+      }
+      @keyframes shimmer {
+        from {
+          background-position: 150% 0;
+        }
+        to {
+          background-position: -100% 0;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .card--skeleton {
+          animation: none;
+        }
+      }
+      .stars {
+        display: flex;
+        gap: 4px;
+        width: max-content;
+      }
+      .stars__star {
+        position: relative;
+        flex: none;
+        width: 22px;
+        height: 22px;
+        color: var(--surface-highlight);
+      }
+      .stars__star .icon {
+        display: block;
+        width: 22px;
+        height: 22px;
+      }
+      .stars__fill {
+        position: absolute;
+        inset: 0 auto 0 0;
+        overflow: hidden;
+        color: var(--color-estrella);
+      }
+      .stars__fill .icon {
+        fill: currentColor;
+      }
+      .rating-input {
+        display: flex;
+        gap: 4px;
+        color: var(--surface-highlight);
+      }
+      .rating-input .icon {
+        display: block;
+        width: 32px;
+        height: 32px;
+      }
+      .rating-input [data-activa='true'] {
+        color: var(--color-estrella);
+      }
+      .rating-input [data-activa='true'] .icon {
+        fill: currentColor;
+      }
+
+      /* ---------- Forma ---------- */
+      .shapes {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-end;
+        gap: 24px;
+      }
+      .shape {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        font-size: var(--fs-sm);
+      }
+      .shape__box {
+        border: 1px solid var(--text);
+        background: var(--surface);
+      }
+
+      /* ---------- Sí / No ---------- */
+      .rules {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 12px;
+      }
+      .rules__col {
+        padding: 16px;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        background: var(--surface);
+      }
+      .rules__col h3 {
+        margin-bottom: 8px;
+        font-size: var(--fs-md);
+      }
+      .rules__col--si h3 {
+        color: var(--color-vista);
+      }
+      .rules__col--no h3 {
+        color: var(--color-error);
+      }
+      .rules__col ul {
+        margin: 0;
+        padding-left: 18px;
+      }
+
+      @media (max-width: 640px) {
+        .type-row {
+          grid-template-columns: 1fr;
+        }
+        .type-row__size {
+          text-align: left;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Íconos de lucide-react (los mismos de la app), definidos una vez y reusados con <use>. -->
+    <svg width="0" height="0" style="position: absolute" aria-hidden="true">
+      <symbol id="i-clock" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="10" />
+        <path d="M12 6v6l4 2" />
+      </symbol>
+      <symbol id="i-play" viewBox="0 0 24 24">
+        <path
+          d="M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z"
+        />
+      </symbol>
+      <symbol id="i-eye" viewBox="0 0 24 24">
+        <path
+          d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"
+        />
+        <circle cx="12" cy="12" r="3" />
+      </symbol>
+      <symbol id="i-plus" viewBox="0 0 24 24">
+        <path d="M5 12h14" />
+        <path d="M12 5v14" />
+      </symbol>
+      <symbol id="i-trash" viewBox="0 0 24 24">
+        <path d="M10 11v6" />
+        <path d="M14 11v6" />
+        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" />
+        <path d="M3 6h18" />
+        <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+      </symbol>
+      <symbol id="i-star" viewBox="0 0 24 24">
+        <path
+          d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"
+        />
+      </symbol>
+      <symbol id="i-chevron-left" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6" /></symbol>
+      <symbol id="i-chevron-right" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6" /></symbol>
+    </svg>
+
+    <main class="board">
+      <header class="board__head">
+        <h1>🎬 Mi Cartelera Personal — Brand board</h1>
+        <p class="section__note">
+          Muestra visual de <code>DESIGN.md</code>. Los valores de la página salen del bloque
+          <code>:root</code> de este archivo, que es una copia de <code>src/index.css</code> al
+          2026-11-10.
+        </p>
+      </header>
+
+      <!-- ===== Color ===== -->
+      <section class="section">
+        <h2 class="section__title">Color</h2>
+        <div class="swatches">
+          <div class="swatch" data-token="--bg">
+            <div class="swatch__color"></div>
+            <div class="swatch__body">
+              <strong>--bg</strong><span data-value></span><span>Fondo de la app</span>
+            </div>
+          </div>
+          <div class="swatch" data-token="--surface">
+            <div class="swatch__color"></div>
+            <div class="swatch__body">
+              <strong>--surface</strong><span data-value></span
+              ><span>Tarjetas, campos, esqueletos</span>
+            </div>
+          </div>
+          <div class="swatch" data-token="--surface-highlight">
+            <div class="swatch__color"></div>
+            <div class="swatch__body">
+              <strong>--surface-highlight</strong><span data-value></span
+              ><span>Shimmer y estrellas vacías</span>
+            </div>
+          </div>
+          <div class="swatch" data-token="--border">
+            <div class="swatch__color"></div>
+            <div class="swatch__body">
+              <strong>--border</strong><span data-value></span><span>Bordes y divisores</span>
+            </div>
+          </div>
+          <div class="swatch" data-token="--text">
+            <div class="swatch__color"></div>
+            <div class="swatch__body">
+              <strong>--text</strong><span data-value></span><span>Texto corriente</span>
+            </div>
+          </div>
+          <div class="swatch" data-token="--text-soft">
+            <div class="swatch__color"></div>
+            <div class="swatch__body">
+              <strong>--text-soft</strong><span data-value></span
+              ><span>Lectura larga (sinopsis)</span>
+            </div>
+          </div>
+          <div class="swatch" data-token="--text-strong">
+            <div class="swatch__color"></div>
+            <div class="swatch__body">
+              <strong>--text-strong</strong><span data-value></span
+              ><span>Títulos, texto activo</span>
+            </div>
+          </div>
+          <div class="swatch" data-token="--color-por-ver">
+            <div class="swatch__color"></div>
+            <div class="swatch__body">
+              <strong>--color-por-ver</strong><span data-value></span><span>Estado pendiente</span>
+            </div>
+          </div>
+          <div class="swatch" data-token="--color-viendo">
+            <div class="swatch__color"></div>
+            <div class="swatch__body">
+              <strong>--color-viendo</strong><span data-value></span
+              ><span>Estado en progreso y foco de campos</span>
+            </div>
+          </div>
+          <div class="swatch" data-token="--color-vista">
+            <div class="swatch__color"></div>
+            <div class="swatch__body">
+              <strong>--color-vista</strong><span data-value></span
+              ><span>Estado vista, acción primaria</span>
+            </div>
+          </div>
+          <div class="swatch" data-token="--color-error">
+            <div class="swatch__color"></div>
+            <div class="swatch__body">
+              <strong>--color-error</strong><span data-value></span
+              ><span>Errores y acciones destructivas</span>
+            </div>
+          </div>
+          <div class="swatch" data-token="--color-estrella">
+            <div class="swatch__color"></div>
+            <div class="swatch__body">
+              <strong>--color-estrella</strong><span data-value></span><span>Estrellas</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== Tipografía ===== -->
+      <section class="section">
+        <h2 class="section__title">Tipografía</h2>
+        <div class="families">
+          <div class="family">
+            <p class="family__sample">Noche de película</p>
+            <p><code>--font-body</code> · Refinery 35 Regular. Todo el texto.</p>
+          </div>
+          <div class="family family--display">
+            <p class="family__sample">Noche de película</p>
+            <p>
+              <code>--font-display</code> · Refinery 35 Bold. Solo h1, h2, pills y chips de filtro.
+            </p>
+          </div>
+        </div>
+        <p class="section__note">
+          Escala: cada paso es el anterior por <code>--font-ratio</code> (<span
+            data-var="--font-ratio"
+          ></span
+          >), a partir de <code>--font-base</code> (<span data-var="--font-base"></span>). Se cambia
+          la escala entera editando una de esas dos variables.
+        </p>
+        <div>
+          <div class="type-row" data-step>
+            <code>--fs-sm</code
+            ><span class="type-row__sample t-sm">Meta de tarjeta y etiquetas</span
+            ><span class="type-row__size" data-size></span>
+          </div>
+          <div class="type-row" data-step>
+            <code>--fs-base</code
+            ><span class="type-row__sample t-base">Texto de interfaz: botones, campos, pills</span
+            ><span class="type-row__size" data-size></span>
+          </div>
+          <div class="type-row" data-step>
+            <code>--fs-md</code
+            ><span class="type-row__sample t-md">Marca del header y créditos</span
+            ><span class="type-row__size" data-size></span>
+          </div>
+          <div class="type-row" data-step>
+            <code>--fs-lg</code
+            ><span class="type-row__sample t-lg">Título de búsqueda (mínimo)</span
+            ><span class="type-row__size" data-size></span>
+          </div>
+          <div class="type-row" data-step>
+            <code>--fs-xl</code><span class="type-row__sample t-xl">Título del inicio (mínimo)</span
+            ><span class="type-row__size" data-size></span>
+          </div>
+          <div class="type-row" data-step>
+            <code>--fs-2xl</code><span class="type-row__sample t-2xl">Título de login</span
+            ><span class="type-row__size" data-size></span>
+          </div>
+          <div class="type-row" data-step>
+            <code>--fs-3xl</code><span class="type-row__sample t-3xl">Título del inicio</span
+            ><span class="type-row__size" data-size></span>
+          </div>
+          <div class="type-row" data-step>
+            <code>--fs-4xl</code><span class="type-row__sample t-4xl">Título del detalle</span
+            ><span class="type-row__size" data-size></span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== Estados ===== -->
+      <section class="section">
+        <h2 class="section__title">Estados de visualización</h2>
+        <p class="section__note">
+          El color siempre va acompañado de su ícono y su texto: nunca se comunica un estado solo
+          con color.
+        </p>
+        <div class="demo">
+          <span class="pill pill--por_ver"
+            ><svg class="icon"><use href="#i-clock" /></svg>Pendiente</span
+          >
+          <span class="pill pill--viendo"
+            ><svg class="icon"><use href="#i-play" /></svg>En progreso</span
+          >
+          <span class="pill pill--vista"
+            ><svg class="icon"><use href="#i-eye" /></svg>Vista</span
+          >
+          <span class="pill pill--ninguna"
+            ><svg class="icon"><use href="#i-plus" /></svg>Agregar a mi lista</span
+          >
+        </div>
+        <div class="demo on-poster">
+          <span class="demo__label">Sobre un póster</span>
+          <button class="icon-btn" type="button" aria-label="Agregar a pendientes">
+            <svg class="icon"><use href="#i-plus" /></svg>
+          </button>
+          <button class="icon-btn icon-btn--por_ver" type="button" aria-label="Pendiente">
+            <svg class="icon"><use href="#i-clock" /></svg>
+          </button>
+          <button class="icon-btn icon-btn--viendo" type="button" aria-label="En progreso">
+            <svg class="icon"><use href="#i-play" /></svg>
+          </button>
+          <button class="icon-btn icon-btn--vista" type="button" aria-label="Vista">
+            <svg class="icon"><use href="#i-eye" /></svg>
+          </button>
+          <button class="icon-btn icon-btn--eliminar" type="button" aria-label="Quitar de mi lista">
+            <svg class="icon"><use href="#i-trash" /></svg>
+          </button>
+        </div>
+      </section>
+
+      <!-- ===== Botones ===== -->
+      <section class="section">
+        <h2 class="section__title">Botones de texto</h2>
+        <div class="demo">
+          <button class="btn btn--primary" type="button">Guardar</button>
+          <button class="btn btn--ghost" type="button">Cancelar</button>
+          <button class="btn btn--danger" type="button">Quitar</button>
+          <button class="btn btn--primary" type="button" disabled>Deshabilitado</button>
+        </div>
+      </section>
+
+      <!-- ===== Controles ===== -->
+      <section class="section">
+        <h2 class="section__title">Campos, filtros y avisos</h2>
+        <div class="demo">
+          <label class="field"
+            >Tiempo disponible (minutos)<input type="number" value="120"
+          /></label>
+          <label class="field"
+            >Ordenar por<select>
+              <option>Más recientes</option>
+              <option>Mi calificación</option>
+            </select></label
+          >
+        </div>
+        <div class="demo">
+          <button class="chip" type="button" aria-pressed="true">Todas</button>
+          <button class="chip" type="button" aria-pressed="false">Pendientes</button>
+          <button class="chip" type="button" aria-pressed="false">En progreso</button>
+          <button class="chip" type="button" aria-pressed="false">Vistas</button>
+        </div>
+        <p class="alert alert--error" role="alert">Error: no se pudo completar la acción.</p>
+        <p class="alert alert--ok">Guardado correctamente.</p>
+      </section>
+
+      <!-- ===== Tarjetas ===== -->
+      <section class="section">
+        <h2 class="section__title">Tarjetas</h2>
+        <p class="section__note">
+          Estado actual del Proyecto 3: el overlay (aquí forzado a visible) lleva las acciones y la
+          información. Los tickets E1-D01 a E1-D04 lo cambiarían; este board se actualiza cuando se
+          implementen.
+        </p>
+        <div class="cards">
+          <article class="card">
+            <div class="card__poster">Póster</div>
+            <div class="card__overlay">
+              <div class="card__actions">
+                <button class="icon-btn icon-btn--eliminar" type="button" aria-label="Quitar">
+                  <svg class="icon"><use href="#i-trash" /></svg>
+                </button>
+                <button class="icon-btn icon-btn--por_ver" type="button" aria-label="Pendiente">
+                  <svg class="icon"><use href="#i-clock" /></svg>
+                </button>
+              </div>
+              <div>
+                <h3 class="card__title">Título de ejemplo</h3>
+                <p class="card__meta">
+                  2024
+                  <span class="card__rating"
+                    ><svg class="icon"><use href="#i-star" /></svg> 4/5</span
+                  >
+                </p>
+              </div>
+            </div>
+          </article>
+          <article class="card">
+            <div class="card__poster">Póster</div>
+            <div class="card__overlay">
+              <div class="card__actions">
+                <button class="icon-btn" type="button" aria-label="Agregar a pendientes">
+                  <svg class="icon"><use href="#i-plus" /></svg>
+                </button>
+              </div>
+              <div>
+                <h3 class="card__title">Sin agregar</h3>
+                <p class="card__meta">2023</p>
+              </div>
+            </div>
+          </article>
+          <div class="card card--skeleton" aria-label="Cargando"></div>
+        </div>
+      </section>
+
+      <!-- ===== Estrellas ===== -->
+      <section class="section">
+        <h2 class="section__title">Estrellas</h2>
+        <div class="demo">
+          <span class="demo__label">Nota general (lectura) · 3.6</span>
+          <div class="stars" role="img" aria-label="3.6 de 5 estrellas">
+            <span class="stars__star"
+              ><svg class="icon"><use href="#i-star" /></svg
+              ><span class="stars__fill" style="width: 100%"
+                ><svg class="icon"><use href="#i-star" /></svg></span
+            ></span>
+            <span class="stars__star"
+              ><svg class="icon"><use href="#i-star" /></svg
+              ><span class="stars__fill" style="width: 100%"
+                ><svg class="icon"><use href="#i-star" /></svg></span
+            ></span>
+            <span class="stars__star"
+              ><svg class="icon"><use href="#i-star" /></svg
+              ><span class="stars__fill" style="width: 100%"
+                ><svg class="icon"><use href="#i-star" /></svg></span
+            ></span>
+            <span class="stars__star"
+              ><svg class="icon"><use href="#i-star" /></svg
+              ><span class="stars__fill" style="width: 59%"
+                ><svg class="icon"><use href="#i-star" /></svg></span
+            ></span>
+            <span class="stars__star"
+              ><svg class="icon"><use href="#i-star" /></svg
+            ></span>
+          </div>
+        </div>
+        <div class="demo">
+          <span class="demo__label">Mi calificación (edición) · 4</span>
+          <div class="rating-input" role="group" aria-label="Mi calificación">
+            <span data-activa="true"
+              ><svg class="icon"><use href="#i-star" /></svg
+            ></span>
+            <span data-activa="true"
+              ><svg class="icon"><use href="#i-star" /></svg
+            ></span>
+            <span data-activa="true"
+              ><svg class="icon"><use href="#i-star" /></svg
+            ></span>
+            <span data-activa="true"
+              ><svg class="icon"><use href="#i-star" /></svg
+            ></span>
+            <span data-activa="false"
+              ><svg class="icon"><use href="#i-star" /></svg
+            ></span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== Íconos ===== -->
+      <section class="section">
+        <h2 class="section__title">Íconos (lucide-react · 18 px · trazo 2)</h2>
+        <div class="icon-grid">
+          <div class="icon-cell">
+            <svg class="icon"><use href="#i-clock" /></svg><span>Clock · pendiente</span>
+          </div>
+          <div class="icon-cell">
+            <svg class="icon"><use href="#i-play" /></svg><span>Play · en progreso</span>
+          </div>
+          <div class="icon-cell">
+            <svg class="icon"><use href="#i-eye" /></svg><span>Eye · vista</span>
+          </div>
+          <div class="icon-cell">
+            <svg class="icon"><use href="#i-plus" /></svg><span>Plus · agregar</span>
+          </div>
+          <div class="icon-cell">
+            <svg class="icon"><use href="#i-trash" /></svg><span>Trash2 · eliminar</span>
+          </div>
+          <div class="icon-cell">
+            <svg class="icon"><use href="#i-star" /></svg><span>Star · calificación</span>
+          </div>
+          <div class="icon-cell">
+            <svg class="icon"><use href="#i-chevron-left" /></svg><span>ChevronLeft · navegar</span>
+          </div>
+          <div class="icon-cell">
+            <svg class="icon"><use href="#i-chevron-right" /></svg
+            ><span>ChevronRight · navegar</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== Forma ===== -->
+      <section class="section">
+        <h2 class="section__title">Forma y medidas</h2>
+        <div class="shapes">
+          <div class="shape">
+            <div
+              class="shape__box"
+              style="width: 96px; height: 64px; border-radius: var(--radius)"
+            ></div>
+            <span><code>--radius</code> · <span data-var="--radius"></span></span>
+          </div>
+          <div class="shape">
+            <div
+              class="shape__box"
+              style="
+                width: var(--icon-btn-size);
+                height: var(--icon-btn-size);
+                border-radius: var(--radius-icon-btn);
+              "
+            ></div>
+            <span
+              ><code>--icon-btn-size</code> · <span data-var="--icon-btn-size"></span> /
+              <code>--radius-icon-btn</code> · <span data-var="--radius-icon-btn"></span
+            ></span>
+          </div>
+          <div class="shape">
+            <div class="shape__box" style="width: 96px; height: 32px; border-radius: 999px"></div>
+            <span>Cápsula · 999px (pills y chips)</span>
+          </div>
+          <div class="shape">
+            <div
+              class="shape__box"
+              style="width: var(--card-width); aspect-ratio: 2 / 3; border-radius: var(--radius)"
+            ></div>
+            <span
+              ><code>--card-width</code> · <span data-var="--card-width"></span> · póster 2:3</span
+            >
+          </div>
+        </div>
+        <p class="section__note">
+          Ancho máximo de página <code>--page-width</code>: <span data-var="--page-width"></span>.
+          Quiebres responsivos: 720 px (el detalle pasa a una columna) y 640 px (el buscador baja de
+          línea).
+        </p>
+      </section>
+
+      <!-- ===== Reglas ===== -->
+      <section class="section">
+        <h2 class="section__title">Reglas rápidas</h2>
+        <div class="rules">
+          <div class="rules__col rules__col--si">
+            <h3>Sí</h3>
+            <ul>
+              <li>Tokens de <code>:root</code> para todo color y tamaño de fuente.</li>
+              <li>Íconos de lucide con el mismo tamaño y trazo.</li>
+              <li>Estado con color, ícono y texto.</li>
+              <li>Carga, error y vacío en cada pantalla que consulta red.</li>
+              <li>Clases BEM en la hoja única <code>index.css</code>.</li>
+            </ul>
+          </div>
+          <div class="rules__col rules__col--no">
+            <h3>No</h3>
+            <ul>
+              <li>Bootstrap, Tailwind u otra librería de estilos.</li>
+              <li>Estilos en línea, <code>!important</code> o colores y tamaños literales.</li>
+              <li>Los colores de estado con otro significado.</li>
+              <li>Más de dos fuentes, ni emojis como íconos de control.</li>
+              <li>Un tercer tipo de botón.</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      // Lee los valores del :root de este mismo archivo, así las etiquetas nunca se desfasan
+      // de las muestras: editar un token una vez actualiza ambas cosas.
+      const raiz = getComputedStyle(document.documentElement)
+      const valor = (token) => raiz.getPropertyValue(token).trim()
+
+      document.querySelectorAll('[data-token]').forEach((el) => {
+        const token = el.dataset.token
+        el.querySelector('.swatch__color').style.background = `var(${token})`
+        el.querySelector('[data-value]').textContent = valor(token)
+      })
+
+      document.querySelectorAll('[data-var]').forEach((el) => {
+        el.textContent = valor(el.dataset.var)
+      })
+
+      // Los pasos de la escala son calc(): el tamaño real solo se conoce midiendo.
+      const pxPorRem = parseFloat(raiz.fontSize)
+      document.querySelectorAll('[data-step]').forEach((fila) => {
+        const px = parseFloat(getComputedStyle(fila.querySelector('.type-row__sample')).fontSize)
+        fila.querySelector('[data-size]').textContent =
+          `${(px / pxPorRem).toFixed(3)}rem · ${px.toFixed(1)} px`
+      })
+    </script>
+  </body>
+</html>
