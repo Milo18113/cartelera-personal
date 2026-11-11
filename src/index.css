@@ -962,3 +962,139 @@ a {
     max-width: 240px;
   }
 }
+
+/* ---------- Noche de película ---------- */
+/* Enlace del encabezado a la pantalla nueva. */
+.app__nav {
+  color: var(--text);
+  font-size: var(--fs-base);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.app__nav:hover {
+  color: var(--text-strong);
+}
+
+.app__nav:focus-visible {
+  outline: 2px solid var(--text-strong);
+  outline-offset: 2px;
+}
+
+.noche {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  padding-top: 32px;
+}
+
+.noche__title {
+  font-size: clamp(var(--fs-xl), 4vw, var(--fs-3xl));
+}
+
+.noche__tiempo {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 320px;
+}
+
+/* Dos columnas: lo que cabe y, al lado, la sesión que se arma. En celular se apilan. */
+.noche__layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  align-items: start;
+}
+
+/* Cada mitad del layout: sus secciones apiladas. */
+.noche__columna {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  min-width: 0;
+}
+
+.noche__seccion {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+/* Mismo encabezado de sección que las filas del inicio (.row__title). */
+.noche__subtitulo {
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+  font-size: var(--fs-base);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text);
+}
+
+.noche__lista {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.noche__esqueleto {
+  height: 64px;
+}
+
+.noche__reintentar {
+  align-self: flex-start;
+}
+
+/* Fila de película: póster chico, título, detalle y una acción opcional. */
+.fila {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px;
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.fila__poster {
+  flex: none;
+  width: 40px;
+  aspect-ratio: 2 / 3;
+  border-radius: var(--radius);
+  object-fit: cover;
+  background: var(--surface-highlight);
+}
+
+.fila__info {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.fila__titulo {
+  font-size: var(--fs-base);
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+.fila__detalle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--fs-sm);
+}
+
+.fila__accion {
+  flex: none;
+}
+
+@media (max-width: 720px) {
+  .noche__layout {
+    grid-template-columns: 1fr;
+  }
+}

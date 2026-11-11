@@ -1,5 +1,6 @@
 import { Link, Outlet, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../auth/useAuth'
+import { rutaNoche } from '../lib/rutas'
 import { MiListaProvider } from '../lista/MiListaProvider'
 import { SearchBar } from './SearchBar'
 
@@ -14,6 +15,9 @@ export function AppLayout() {
       <header className="app__header">
         <Link to="/" className="app__brand">
           🎬 Mi Cartelera Personal
+        </Link>
+        <Link to={rutaNoche()} className="app__nav">
+          Noche de película
         </Link>
         {/* key: remonta el input cuando cambia la URL (botón atrás, otra ruta) para resincronizarlo. */}
         <SearchBar key={busquedaActual} inicial={busquedaActual} />

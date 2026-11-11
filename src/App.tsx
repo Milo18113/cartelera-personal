@@ -5,6 +5,7 @@ import { AppLayout } from './components/AppLayout'
 import { DetailPage } from './pages/DetailPage'
 import { HomePage } from './pages/HomePage'
 import { LoginPage } from './pages/LoginPage'
+import { NochePage } from './pages/NochePage'
 import { RegisterPage } from './pages/RegisterPage'
 import { SearchPage } from './pages/SearchPage'
 
@@ -25,6 +26,7 @@ function App() {
           >
             <Route path="/" element={<HomePage />} />
             <Route path="/buscar" element={<SearchPage />} />
+            <Route path="/noche" element={<NochePage />} />
             <Route path="/titulo/:tipo/:id" element={<DetailPage />} />
           </Route>
           {/* URL desconocida → "/", que sin sesión rebota a /login. */}
