@@ -2,14 +2,12 @@ import { createContext } from 'react'
 import type { Estado, ItemLista } from '../domain/miLista'
 import type { CambiosOpinion, NuevoItem } from '../infrastructure/miListaRepository'
 
-// Las acciones devuelven true si se completaron: permite a la UI mostrar "Guardado"
-// sin tener que interpretar actionError.
+// Las acciones devuelven true si se completaron: permite a la UI mostrar "Guardado". Los errores
+// no se guardan aquí: la lista los avisa con el snackbar (notificaciones/).
 export interface MiListaContextValue {
   items: ItemLista[]
   loading: boolean
   error: string | null
-  // Error de la última acción (agregar/cambiar/eliminar/guardar); null si salió bien.
-  actionError: string | null
   // Claves (claveTitulo) con una petición en curso: la UI deshabilita sus botones.
   busy: ReadonlySet<string>
   agregar: (nuevo: NuevoItem) => Promise<boolean>

@@ -60,12 +60,6 @@ export function HomePage() {
         onOrdenChange={setOrden}
       />
 
-      {acciones.actionError && (
-        <p role="alert" className="alert alert--error">
-          {acciones.actionError}
-        </p>
-      )}
-
       {/* Con un filtro activo solo se muestra la fila de ese estado: ni recomendadas ni recientes. */}
       {filtro === 'todas' && (
         <>

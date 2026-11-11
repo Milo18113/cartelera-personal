@@ -2,6 +2,7 @@ import { Link, Outlet, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../auth/useAuth'
 import { rutaNoche } from '../lib/rutas'
 import { MiListaProvider } from '../lista/MiListaProvider'
+import { NotificacionesProvider } from '../notificaciones/NotificacionesProvider'
 import { SearchBar } from './SearchBar'
 
 // Shell de las rutas protegidas: el header con buscador y logout queda visible siempre.
@@ -29,10 +30,13 @@ export function AppLayout() {
         </div>
       </header>
 
-      {/* Dentro de la ruta protegida: la lista solo se pide con sesión activa. */}
-      <MiListaProvider>
-        <Outlet />
-      </MiListaProvider>
+      {/* Dentro de la ruta protegida: la lista solo se pide con sesión activa. Las notificaciones
+          van por fuera porque la lista las usa para avisar sus errores. */}
+      <NotificacionesProvider>
+        <MiListaProvider>
+          <Outlet />
+        </MiListaProvider>
+      </NotificacionesProvider>
     </div>
   )
 }

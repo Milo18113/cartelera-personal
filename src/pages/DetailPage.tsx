@@ -31,7 +31,6 @@ interface DetailContentProps {
 
 function DetailContent({ tipo, tmdbId }: DetailContentProps) {
   const { detalle, loading, error } = useDetalleTitulo(tipo, tmdbId)
-  const acciones = useAccionesTarjeta()
   const navigate = useNavigate()
 
   // idx > 0 significa que hay una pantalla anterior dentro de la app (búsqueda, inicio...).
@@ -48,12 +47,6 @@ function DetailContent({ tipo, tmdbId }: DetailContentProps) {
         <ArrowLeft {...ICON_PROPS} aria-hidden="true" />
         Volver
       </button>
-
-      {acciones.actionError && (
-        <p role="alert" className="alert alert--error">
-          {acciones.actionError}
-        </p>
-      )}
 
       {loading ? (
         <DetailSkeleton />

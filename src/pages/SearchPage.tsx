@@ -31,12 +31,6 @@ export function SearchPage() {
     <main className="search">
       <h1 className="search__title">Resultados para “{q}”</h1>
 
-      {acciones.actionError && (
-        <p role="alert" className="alert alert--error">
-          {acciones.actionError}
-        </p>
-      )}
-
       {!busqueda.consultaValida ? (
         <p className="status-message">Escribe al menos 2 caracteres para buscar.</p>
       ) : busqueda.loading ? (
