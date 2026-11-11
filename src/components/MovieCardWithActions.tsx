@@ -1,18 +1,19 @@
+import type { Estado } from '../domain/miLista'
 import { CardActions } from './CardActions'
 import { MovieCard, type TarjetaPelicula } from './MovieCard'
 
 interface MovieCardWithActionsProps {
   pelicula: TarjetaPelicula
   busy: ReadonlySet<string>
-  onAvanzar: (pelicula: TarjetaPelicula) => void
+  onCambiarEstado: (pelicula: TarjetaPelicula, estado: Estado) => void
   onEliminar: (pelicula: TarjetaPelicula) => void
 }
 
-// Tarjeta + sus botones, compartida por las filas del inicio y la grilla de búsqueda.
+// Tarjeta + sus controles, compartida por las filas del inicio y la grilla de búsqueda.
 export function MovieCardWithActions({
   pelicula,
   busy,
-  onAvanzar,
+  onCambiarEstado,
   onEliminar,
 }: MovieCardWithActionsProps) {
   return (
@@ -21,8 +22,9 @@ export function MovieCardWithActions({
       acciones={
         <CardActions
           estado={pelicula.item?.estado ?? null}
+          titulo={pelicula.titulo}
           busy={busy.has(pelicula.clave)}
-          onAvanzar={() => onAvanzar(pelicula)}
+          onCambiarEstado={(estado) => onCambiarEstado(pelicula, estado)}
           onEliminar={() => onEliminar(pelicula)}
         />
       }

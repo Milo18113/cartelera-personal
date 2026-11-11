@@ -1,20 +1,14 @@
 import { ArrowLeft, ImageOff } from 'lucide-react'
 import { Navigate, useNavigate, useParams } from 'react-router-dom'
 import { CommentBox } from '../components/CommentBox'
-import { ETIQUETA_ACCION_ESTADO } from '../components/etiquetasEstado'
-import { EstadoPill } from '../components/EstadoPill'
+import { EstadoSelect } from '../components/EstadoSelect'
 import { ICON_PROPS } from '../components/iconos'
 import { RatingInput } from '../components/RatingInput'
 import { RemoveFromList } from '../components/RemoveFromList'
 import { StarRating } from '../components/StarRating'
 import { tarjetaDeDetalle } from '../components/tarjetas'
 import type { DetalleTitulo } from '../domain/detalle'
-import {
-  ETIQUETA_ESTADO_SINGULAR,
-  claveTitulo,
-  siguienteEstado,
-  type TipoContenido,
-} from '../domain/miLista'
+import { claveTitulo, type TipoContenido } from '../domain/miLista'
 import { useAccionesTarjeta } from '../hooks/useAccionesTarjeta'
 import { useDetalleTitulo } from '../hooks/useDetalleTitulo'
 import { useMiLista } from '../lista/useMiLista'
@@ -83,10 +77,10 @@ function DetailBody({ detalle }: { detalle: DetalleTitulo }) {
   )
   const estado = item?.estado ?? null
   const ocupado = acciones.busy.has(claveTitulo(detalle.tipo, detalle.tmdbId))
-  // Mismas acciones que las tarjetas del inicio: agregar → pendiente → en progreso → vista.
+  // Mismas acciones que las tarjetas del inicio: elegir un estado agrega el título o lo cambia.
   const tarjeta = tarjetaDeDetalle(detalle, item)
-  // Mientras la lista carga (o falla) no se sabe si el título ya está guardado: se bloquea la
-  // pill para no insertarlo dos veces.
+  // Mientras la lista carga (o falla) no se sabe si el título ya está guardado: se bloquea el
+  // selector para no insertarlo dos veces.
   const listaNoLista = lista.loading || lista.error !== null
 
   return (
@@ -123,15 +117,14 @@ function DetailBody({ detalle }: { detalle: DetalleTitulo }) {
 
         <div className="detail__meta">
           {detalle.generos.length > 0 && <p>{detalle.generos.join(', ')}</p>}
-          <EstadoPill
+          <EstadoSelect
             estado={estado}
+            titulo={detalle.titulo}
+            variante="detalle"
             busy={ocupado}
-            disabled={listaNoLista || siguienteEstado(estado) === null}
-            etiquetaAccion={ETIQUETA_ACCION_ESTADO[estado ?? 'ninguna']}
-            onClick={() => acciones.onAvanzar(tarjeta)}
-          >
-            {estado === null ? 'Agregar a mi lista' : ETIQUETA_ESTADO_SINGULAR[estado]}
-          </EstadoPill>
+            disabled={listaNoLista}
+            onCambiar={(nuevo) => acciones.onCambiarEstado(tarjeta, nuevo)}
+          />
           {item && (
             <RemoveFromList disabled={ocupado} onConfirmar={() => acciones.onEliminar(tarjeta)} />
           )}

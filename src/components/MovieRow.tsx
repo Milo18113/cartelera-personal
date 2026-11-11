@@ -1,3 +1,4 @@
+import type { Estado } from '../domain/miLista'
 import type { TarjetaPelicula } from './MovieCard'
 import { MovieCardSkeleton } from './MovieCardSkeleton'
 import { MovieCardWithActions } from './MovieCardWithActions'
@@ -9,7 +10,7 @@ interface MovieRowProps {
   error: string | null
   vacio: string
   busy: ReadonlySet<string>
-  onAvanzar: (pelicula: TarjetaPelicula) => void
+  onCambiarEstado: (pelicula: TarjetaPelicula, estado: Estado) => void
   onEliminar: (pelicula: TarjetaPelicula) => void
 }
 
@@ -22,7 +23,7 @@ export function MovieRow({
   error,
   vacio,
   busy,
-  onAvanzar,
+  onCambiarEstado,
   onEliminar,
 }: MovieRowProps) {
   return (
@@ -48,7 +49,7 @@ export function MovieRow({
               key={pelicula.clave}
               pelicula={pelicula}
               busy={busy}
-              onAvanzar={onAvanzar}
+              onCambiarEstado={onCambiarEstado}
               onEliminar={onEliminar}
             />
           ))}

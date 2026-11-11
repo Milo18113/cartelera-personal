@@ -351,35 +351,6 @@ a {
   color: var(--text);
 }
 
-/* Pill del detalle como botón: mismo comportamiento que los botones de las tarjetas
-   (hover blanco, el estado final "vista" queda deshabilitado pero sin atenuarse). */
-.pill--btn {
-  border: 0;
-  /* El shorthand reinicia familia y tamaño: se vuelven a fijar para igualar a las demás pills. */
-  font: inherit;
-  font-family: var(--font-display);
-  font-size: var(--fs-base);
-  cursor: pointer;
-}
-
-.pill--btn:hover:not(:disabled) {
-  background: var(--text-strong);
-  color: var(--bg);
-}
-
-.pill--btn:disabled {
-  cursor: default;
-}
-
-.pill--btn[aria-busy='true'] {
-  opacity: 0.5;
-}
-
-.pill--btn:focus-visible {
-  outline: 2px solid var(--text-strong);
-  outline-offset: 2px;
-}
-
 /* Filtros */
 .filters {
   display: flex;
@@ -553,6 +524,103 @@ a {
   display: flex;
   justify-content: flex-end;
   gap: 6px;
+}
+
+/* Selector de estado, abajo del póster y a todo el ancho. margin-top: auto lo baja aunque no
+   haya botón de eliminar arriba; solo el selector captura el clic, el resto deja pasar al enlace. */
+.card__estado {
+  margin-top: auto;
+  pointer-events: none;
+}
+
+.card__estado .estado-select {
+  pointer-events: auto;
+}
+
+/* Selector de estado: un <select> nativo con ícono y flecha propios. El color es el del estado,
+   igual que los botones de ícono y las pills; el texto siempre dice cuál es (DESIGN.md §1). */
+.estado-select {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  border-radius: var(--radius-icon-btn);
+  background: var(--surface-highlight);
+  color: var(--text-strong);
+}
+
+.estado-select--por_ver {
+  background: var(--color-por-ver);
+  color: var(--bg);
+}
+
+.estado-select--viendo {
+  background: var(--color-viendo);
+  color: var(--bg);
+}
+
+.estado-select--vista {
+  background: var(--color-vista);
+  color: var(--bg);
+}
+
+/* El ícono (primero) y la flecha (último) van sobre el select sin capturar el clic. */
+.estado-select svg {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.estado-select svg:first-child {
+  left: 10px;
+}
+
+.estado-select svg:last-child {
+  right: 8px;
+}
+
+.estado-select__control {
+  width: 100%;
+  min-height: var(--icon-btn-size);
+  padding: 0 30px 0 36px;
+  border: 0;
+  border-radius: inherit;
+  appearance: none;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-overflow: ellipsis;
+  cursor: pointer;
+}
+
+.estado-select__control:focus-visible {
+  outline: 2px solid var(--text-strong);
+  outline-offset: 2px;
+}
+
+.estado-select__control:disabled {
+  cursor: default;
+}
+
+/* Mientras se guarda un cambio (o la lista carga) el selector se atenúa, como los botones. */
+.estado-select:has(.estado-select__control:disabled) {
+  opacity: 0.5;
+}
+
+/* La lista desplegable la dibuja el sistema: se le fijan colores legibles sobre fondo oscuro. */
+.estado-select__control option {
+  background: var(--surface);
+  color: var(--text-strong);
+}
+
+.estado-select--tarjeta {
+  width: 100%;
+  font-size: var(--fs-sm);
+}
+
+.estado-select--detalle {
+  font-size: var(--fs-base);
 }
 
 /* Botón cuadrado con ícono. corner-shape: squircle suaviza la curva donde el

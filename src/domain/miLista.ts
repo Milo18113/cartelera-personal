@@ -26,15 +26,13 @@ export const ETIQUETA_ESTADO: Record<Estado, string> = {
   vista: 'Vistas',
 }
 
-// ninguna lista (null) → por_ver → viendo → vista. "vista" es final: devuelve null.
-const SIGUIENTE_ESTADO: Record<Estado, Estado | null> = {
-  por_ver: 'viendo',
-  viendo: 'vista',
-  vista: null,
-}
+export type CambioEstado = 'ninguno' | 'agregar' | 'cambiar'
 
-export function siguienteEstado(actual: Estado | null): Estado | null {
-  return actual === null ? 'por_ver' : SIGUIENTE_ESTADO[actual]
+// Cualquier estado puede pasar a cualquier otro, y un título que aún no está en la lista se
+// agrega directamente en el estado elegido. Elegir el que ya tiene no hace nada (ninguna petición).
+export function decidirCambioEstado(actual: Estado | null, nuevo: Estado): CambioEstado {
+  if (actual === null) return 'agregar'
+  return actual === nuevo ? 'ninguno' : 'cambiar'
 }
 
 // Para mostrar el estado de un solo título (pill del detalle).

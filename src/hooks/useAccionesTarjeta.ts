@@ -1,26 +1,31 @@
 import type { TarjetaPelicula } from '../components/MovieCard'
-import { siguienteEstado } from '../domain/miLista'
+import { decidirCambioEstado, type Estado } from '../domain/miLista'
 import { useMiLista } from '../lista/useMiLista'
 
-// Conecta los botones de una tarjeta con la lista. Lo comparten inicio y búsqueda.
+// Conecta los controles de una tarjeta con la lista. Lo comparten inicio, búsqueda y detalle.
 export function useAccionesTarjeta() {
   const lista = useMiLista()
 
-  // Click en el botón de estado: ninguna → por_ver (insert) y luego avanza (update).
-  const onAvanzar = (pelicula: TarjetaPelicula) => {
-    const siguiente = siguienteEstado(pelicula.item?.estado ?? null)
-    if (siguiente === null) return
+  // Elegir un estado en el selector: agrega el título si aún no está en la lista y, si ya está,
+  // lo cambia. Elegir el estado que ya tiene no hace ninguna petición.
+  const onCambiarEstado = (pelicula: TarjetaPelicula, estado: Estado) => {
+    const { item } = pelicula
 
-    if (pelicula.item) {
-      void lista.cambiarEstado(pelicula.item, siguiente)
-    } else {
-      void lista.agregar({
-        tmdbId: pelicula.tmdbId,
-        titulo: pelicula.titulo,
-        posterUrl: pelicula.posterUrl,
-        tipo: pelicula.tipo,
-        estado: siguiente,
-      })
+    switch (decidirCambioEstado(item?.estado ?? null, estado)) {
+      case 'ninguno':
+        return
+      case 'cambiar':
+        if (item) void lista.cambiarEstado(item, estado)
+        return
+      case 'agregar':
+        void lista.agregar({
+          tmdbId: pelicula.tmdbId,
+          titulo: pelicula.titulo,
+          posterUrl: pelicula.posterUrl,
+          tipo: pelicula.tipo,
+          estado,
+        })
+        return
     }
   }
 
@@ -28,5 +33,5 @@ export function useAccionesTarjeta() {
     if (pelicula.item) void lista.eliminar(pelicula.item)
   }
 
-  return { busy: lista.busy, actionError: lista.actionError, onAvanzar, onEliminar }
+  return { busy: lista.busy, actionError: lista.actionError, onCambiarEstado, onEliminar }
 }

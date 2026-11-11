@@ -1,47 +1,51 @@
-import { siguienteEstado, type Estado } from '../domain/miLista'
-import { ETIQUETA_ACCION_ESTADO } from './etiquetasEstado'
-import { ICONO_AGREGAR, ICONO_ELIMINAR, ICONO_ESTADO, ICON_PROPS } from './iconos'
+import type { Estado } from '../domain/miLista'
+import { EstadoSelect } from './EstadoSelect'
+import { ICONO_ELIMINAR, ICON_PROPS } from './iconos'
 
 interface CardActionsProps {
   estado: Estado | null
+  titulo: string
   busy: boolean
-  onAvanzar: () => void
+  onCambiarEstado: (estado: Estado) => void
   onEliminar: () => void
 }
 
-export function CardActions({ estado, busy, onAvanzar, onEliminar }: CardActionsProps) {
-  const Icono = estado === null ? ICONO_AGREGAR : ICONO_ESTADO[estado]
-  const etiqueta = ETIQUETA_ACCION_ESTADO[estado ?? 'ninguna']
-  const esFinal = siguienteEstado(estado) === null
-
+// Controles del overlay: eliminar arriba a la derecha y el selector de estado abajo.
+export function CardActions({
+  estado,
+  titulo,
+  busy,
+  onCambiarEstado,
+  onEliminar,
+}: CardActionsProps) {
   return (
     <>
       {/* Eliminar solo existe si el título ya está en mi lista. */}
       {estado !== null && (
-        <button
-          type="button"
-          className="icon-btn icon-btn--eliminar"
-          aria-label="Quitar de mi lista"
-          title="Quitar de mi lista"
-          aria-busy={busy}
-          disabled={busy}
-          onClick={onEliminar}
-        >
-          <ICONO_ELIMINAR {...ICON_PROPS} aria-hidden="true" />
-        </button>
+        <div className="card__actions">
+          <button
+            type="button"
+            className="icon-btn icon-btn--eliminar"
+            aria-label="Quitar de mi lista"
+            title="Quitar de mi lista"
+            aria-busy={busy}
+            disabled={busy}
+            onClick={onEliminar}
+          >
+            <ICONO_ELIMINAR {...ICON_PROPS} aria-hidden="true" />
+          </button>
+        </div>
       )}
 
-      <button
-        type="button"
-        className={`icon-btn icon-btn--${estado ?? 'ninguna'}`}
-        aria-label={etiqueta}
-        title={etiqueta}
-        aria-busy={busy}
-        disabled={busy || esFinal}
-        onClick={onAvanzar}
-      >
-        <Icono {...ICON_PROPS} aria-hidden="true" />
-      </button>
+      <div className="card__estado">
+        <EstadoSelect
+          estado={estado}
+          titulo={titulo}
+          variante="tarjeta"
+          busy={busy}
+          onCambiar={onCambiarEstado}
+        />
+      </div>
     </>
   )
 }

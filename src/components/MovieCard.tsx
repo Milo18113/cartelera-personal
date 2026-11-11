@@ -55,9 +55,7 @@ export function MovieCard({ pelicula, acciones }: MovieCardProps) {
 
         {/* El overlay va sobre el póster (position: absolute) y aparece con hover/focus. Lleva
             solo los controles: título, año y calificación ya están siempre visibles abajo. */}
-        <div className="card__overlay">
-          <div className="card__actions">{acciones}</div>
-        </div>
+        <div className="card__overlay">{acciones}</div>
       </div>
 
       <div className="card__info">
