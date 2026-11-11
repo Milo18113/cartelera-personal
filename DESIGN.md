@@ -58,19 +58,19 @@ Solo existen esos dos archivos de fuente: `font-synthesis: none` evita negritas 
 
 | Variable | Valor |
 | --- | --- |
-| `--font-base` | `0.875rem` (14 px) |
-| `--font-ratio` | `1.2` |
+| `--font-base` | `1.1rem` (17.6 px) |
+| `--font-ratio` | `1.15` |
 
 | Paso | Tamaño | Uso |
 | --- | --- | --- |
-| `--fs-sm` | 0.729rem · 11.7 px | Meta de tarjeta, etiquetas en mayúsculas (`detail__label`). |
-| `--fs-base` | 0.875rem · 14 px | Texto de interfaz: botones, campos, pills, filas. |
-| `--fs-md` | 1.05rem · 16.8 px | Marca del header, créditos del detalle. |
-| `--fs-lg` | 1.26rem · 20.2 px | Mínimo del título de búsqueda. |
-| `--fs-xl` | 1.512rem · 24.2 px | Mínimo del título del inicio. |
-| `--fs-2xl` | 1.814rem · 29 px | Título de login, máximo del título de búsqueda. |
-| `--fs-3xl` | 2.177rem · 34.8 px | Máximo del título del inicio. |
-| `--fs-4xl` | 2.613rem · 41.8 px | Máximo del título del detalle. |
+| `--fs-sm` | 0.957rem · 15.3 px | Meta de tarjeta, etiquetas en mayúsculas (`detail__label`). |
+| `--fs-base` | 1.1rem · 17.6 px | Texto de interfaz: botones, campos, pills, filas. |
+| `--fs-md` | 1.265rem · 20.2 px | Marca del header, créditos del detalle. |
+| `--fs-lg` | 1.455rem · 23.3 px | Mínimo del título de búsqueda. |
+| `--fs-xl` | 1.673rem · 26.8 px | Mínimo del título del inicio. |
+| `--fs-2xl` | 1.924rem · 30.8 px | Título de login, máximo del título de búsqueda. |
+| `--fs-3xl` | 2.212rem · 35.4 px | Máximo del título del inicio. |
+| `--fs-4xl` | 2.544rem · 40.7 px | Máximo del título del detalle. |
 
 Los títulos que cambian con el ancho usan `clamp(var(--fs-xl), 4vw, var(--fs-3xl))`. Los tamaños de ícono y de estrella son medidas de ícono, no de texto, y quedan fuera de la escala.
 

@@ -56,8 +56,8 @@
      todos los tamaños; cambiar --font-ratio abre o cierra la distancia entre pasos.
      Las reglas usan solo los --fs-*, nunca un tamaño literal. El prefijo es --fs- porque
      --text, --text-strong y --text-soft ya son colores. */
-  --font-base: 0.875rem;
-  --font-ratio: 1.2;
+  --font-base: 1.1rem;
+  --font-ratio: 1.15;
   --fs-sm: calc(var(--font-base) / var(--font-ratio));
   --fs-base: var(--font-base);
   --fs-md: calc(var(--fs-base) * var(--font-ratio));
