@@ -28,4 +28,4 @@ React 19 + TypeScript + Vite · Supabase (Auth y Postgres con RLS) · TMDB · CS
 - `npm run dev` · `npm run build` (typecheck + build) · `npm run lint`
 
 ## Git
-- No hacer commit ni push por iniciativa propia. El commit lo dispara el usuario con `/commit`; el push es siempre manual.
+- Los commits los hace el agente siguiendo `.claude/skills/commit/SKILL.md`, sin esperar a que el usuario escriba `/commit`. Nunca hace push: es siempre manual.
