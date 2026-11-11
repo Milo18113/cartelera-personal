@@ -52,14 +52,14 @@ Migración SQL con el modelo de sesiones y de las películas de cada sesión (qu
 
 ## E2-T04 — Servicio de duración de películas
 
-**Tipo:** Infraestructura · **Historias:** HU-01 · **Dependencias:** ninguna
+**Tipo:** Infraestructura · **Historias:** HU-01 · **Dependencias:** T01 (usa el tipo y la función de duración del dominio)
 
 Servicio que consulta a TMDB la duración de una película. Devuelve los minutos o «sin duración» (0 o ausente) y distingue un fallo de consulta, que se puede reintentar.
 
 **Definition of Done**
 - Soporta cancelar la petición y consultar varias películas con un límite de peticiones simultáneas (PA-03).
 - El detalle de títulos de E1 sigue igual.
-- Prueba del mapeo de duración: número, 0, ausente.
+- El mapeo de la duración usa la función pura de T01 (ya probada). El límite de peticiones simultáneas lo aplica un helper genérico, `mapConLimite`, con su propio test.
 
 ## E2-T05 — Servicio de sesiones
 
@@ -116,12 +116,12 @@ Pantalla con la lista de sesiones y pantalla de detalle, ambas protegidas, con e
 
 **Tipo:** Prueba · **Historias:** HU-05 · **Dependencias:** T03
 
-Extiende la prueba de RLS que ya existe en `scripts/test-rls.ts` para las sesiones: dos cuentas contra la API, sin pasar por la interfaz.
+Script hermano de `scripts/test-rls.ts` (que no se modifica) para las sesiones: dos cuentas contra la API, sin pasar por la interfaz.
 
 **Definition of Done**
 - Comprueba HU-05-C2 a C6: la otra cuenta no ve, no abre por id, no modifica ni elimina, no guarda a nombre ajeno, y sin sesión no se lee ni se guarda.
 - Incluye la comprobación contraria: cada dueño sí ve y guarda lo suyo.
-- Limpia los datos que crea.
+- Documenta cómo limpiar los datos de prueba: las sesiones no se pueden eliminar desde la API (DEC-03), así que se borran los usuarios de prueba con SQL y sus sesiones caen por cascada.
 - La salida de la ejecución queda como evidencia.
 
 ## E2-T11 — Verificación en el navegador
@@ -152,10 +152,10 @@ Extiende la prueba de RLS que ya existe en `scripts/test-rls.ts` para las sesion
 
 | Ticket | Depende de | Se puede hacer en paralelo con |
 | --- | --- | --- |
-| T01 | — | T03, T04 |
+| T01 | — | T03 |
 | T02 | T01 | T03, T04 |
 | T03 | spec | T01, T02, T04 |
-| T04 | — | T01, T02, T03 |
+| T04 | T01 | T02, T03 |
 | T05 | T03 | T06 |
 | T06 | T01, T02, T04 | T05 |
 | T07 | T01, T06 | T05 |
