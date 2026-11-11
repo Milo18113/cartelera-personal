@@ -7,7 +7,6 @@ interface EstadoSelectProps {
   estado: Estado | null
   // Nombra el título en la etiqueta accesible: sin ella, varios selectores iguales no se distinguen.
   titulo: string
-  variante: 'tarjeta' | 'detalle'
   busy: boolean
   disabled?: boolean
   onCambiar: (estado: Estado) => void
@@ -16,24 +15,15 @@ interface EstadoSelectProps {
 // Valor de la opción inicial «Agregar a…»: no es un estado, por eso no se puede elegir.
 const SIN_ESTADO = ''
 
-// Elegir el estado de un título: cualquiera de los tres, desde cualquier otro. Es un <select>
-// nativo (accesible por teclado y lector de pantalla, abre el selector del sistema en el celular
-// y no lo recorta el overflow de la tarjeta); el ícono y la flecha son propios.
-export function EstadoSelect({
-  estado,
-  titulo,
-  variante,
-  busy,
-  disabled,
-  onCambiar,
-}: EstadoSelectProps) {
+// Elegir el estado de un título: cualquiera de los tres, desde cualquier otro. Vive en el detalle;
+// las tarjetas solo agregan («+») o quitan (papelera). Es un <select> nativo (accesible por teclado
+// y lector de pantalla, y abre el selector del sistema en el celular); el ícono y la flecha son propios.
+export function EstadoSelect({ estado, titulo, busy, disabled, onCambiar }: EstadoSelectProps) {
   const Icono = estado === null ? ICONO_AGREGAR : ICONO_ESTADO[estado]
   const etiqueta = estado === null ? `Agregar “${titulo}” a mi lista` : `Estado de “${titulo}”`
 
   return (
-    <span
-      className={`estado-select estado-select--${estado ?? 'ninguna'} estado-select--${variante}`}
-    >
+    <span className={`estado-select estado-select--${estado ?? 'ninguna'}`}>
       <Icono {...ICON_PROPS} aria-hidden="true" />
       <select
         className="estado-select__control"

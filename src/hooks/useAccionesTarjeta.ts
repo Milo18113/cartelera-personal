@@ -15,8 +15,27 @@ export function useAccionesTarjeta() {
     if (await accion) notificar({ tipo: 'exito', mensaje })
   }
 
-  // Elegir un estado en el selector: agrega el título si aún no está en la lista y, si ya está,
-  // lo cambia. Elegir el estado que ya tiene no hace ninguna petición.
+  const agregarComo = (pelicula: TarjetaPelicula, estado: Estado) => {
+    void confirmar(
+      lista.agregar({
+        tmdbId: pelicula.tmdbId,
+        titulo: pelicula.titulo,
+        posterUrl: pelicula.posterUrl,
+        tipo: pelicula.tipo,
+        estado,
+      }),
+      mensajeAgregada(pelicula.titulo, estado),
+    )
+  }
+
+  // El «+» de las tarjetas: agrega el título como «por ver», así aparece en «Agregadas
+  // recientemente» y en «Pendientes». Si el título ya está en la lista no hace nada.
+  const onAgregar = (pelicula: TarjetaPelicula) => {
+    if (!pelicula.item) agregarComo(pelicula, 'por_ver')
+  }
+
+  // Elegir un estado en el selector del detalle: agrega el título si aún no está en la lista y,
+  // si ya está, lo cambia. Elegir el estado que ya tiene no hace ninguna petición.
   const onCambiarEstado = (pelicula: TarjetaPelicula, estado: Estado) => {
     const { item } = pelicula
 
@@ -29,16 +48,7 @@ export function useAccionesTarjeta() {
         }
         return
       case 'agregar':
-        void confirmar(
-          lista.agregar({
-            tmdbId: pelicula.tmdbId,
-            titulo: pelicula.titulo,
-            posterUrl: pelicula.posterUrl,
-            tipo: pelicula.tipo,
-            estado,
-          }),
-          mensajeAgregada(pelicula.titulo, estado),
-        )
+        agregarComo(pelicula, estado)
         return
     }
   }
@@ -49,5 +59,5 @@ export function useAccionesTarjeta() {
     }
   }
 
-  return { busy: lista.busy, onCambiarEstado, onEliminar }
+  return { busy: lista.busy, onAgregar, onCambiarEstado, onEliminar }
 }

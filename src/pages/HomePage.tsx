@@ -70,7 +70,7 @@ export function HomePage() {
             error={recomendaciones.error}
             vacio="No hay recomendaciones por ahora."
             busy={acciones.busy}
-            onCambiarEstado={acciones.onCambiarEstado}
+            onAgregar={acciones.onAgregar}
             onEliminar={acciones.onEliminar}
           />
           <MovieRow
@@ -80,7 +80,7 @@ export function HomePage() {
             error={lista.error}
             vacio="Aún no has agregado nada."
             busy={acciones.busy}
-            onCambiarEstado={acciones.onCambiarEstado}
+            onAgregar={acciones.onAgregar}
             onEliminar={acciones.onEliminar}
           />
         </>
@@ -98,7 +98,7 @@ export function HomePage() {
           error={lista.error}
           vacio="No tienes títulos en esta lista."
           busy={acciones.busy}
-          onCambiarEstado={acciones.onCambiarEstado}
+          onAgregar={acciones.onAgregar}
           onEliminar={acciones.onEliminar}
         />
       ))}

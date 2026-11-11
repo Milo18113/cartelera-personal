@@ -53,7 +53,7 @@ export function SearchPage() {
                 key={pelicula.clave}
                 pelicula={pelicula}
                 busy={acciones.busy}
-                onCambiarEstado={acciones.onCambiarEstado}
+                onAgregar={acciones.onAgregar}
                 onEliminar={acciones.onEliminar}
               />
             ))}

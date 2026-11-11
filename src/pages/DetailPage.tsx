@@ -113,7 +113,6 @@ function DetailBody({ detalle }: { detalle: DetalleTitulo }) {
           <EstadoSelect
             estado={estado}
             titulo={detalle.titulo}
-            variante="detalle"
             busy={ocupado}
             disabled={listaNoLista}
             onCambiar={(nuevo) => acciones.onCambiarEstado(tarjeta, nuevo)}

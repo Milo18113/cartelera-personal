@@ -546,13 +546,7 @@ a {
   flex-direction: column;
   justify-content: space-between;
   padding: 8px;
-  background: linear-gradient(
-    to bottom,
-    rgba(0, 0, 0, 0.55),
-    transparent 35%,
-    transparent 55%,
-    rgba(0, 0, 0, 0.85)
-  );
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.55), transparent 40%);
   opacity: 0;
   transition: opacity 0.15s ease;
   /* Encima del link de la tarjeta pero "transparente" al clic: solo los botones lo capturan. */
@@ -595,24 +589,15 @@ a {
   gap: 6px;
 }
 
-/* Selector de estado, abajo del póster y a todo el ancho. margin-top: auto lo baja aunque no
-   haya botón de eliminar arriba; solo el selector captura el clic, el resto deja pasar al enlace. */
-.card__estado {
-  margin-top: auto;
-  pointer-events: none;
-}
-
-.card__estado .estado-select {
-  pointer-events: auto;
-}
-
-/* Selector de estado: un <select> nativo con ícono y flecha propios. El color es el del estado,
-   igual que los botones de ícono y las pills; el texto siempre dice cuál es (DESIGN.md §1). */
+/* Selector de estado (solo en el detalle): un <select> nativo con ícono y flecha propios. El color
+   es el del estado, igual que los botones de ícono y las pills; el texto siempre dice cuál es
+   (DESIGN.md §1). */
 .estado-select {
   position: relative;
   display: inline-flex;
   align-items: center;
   max-width: 100%;
+  font-size: var(--fs-base);
   border-radius: var(--radius-icon-btn);
   background: var(--surface-highlight);
   color: var(--text-strong);
@@ -681,15 +666,6 @@ a {
 .estado-select__control option {
   background: var(--surface);
   color: var(--text-strong);
-}
-
-.estado-select--tarjeta {
-  width: 100%;
-  font-size: var(--fs-sm);
-}
-
-.estado-select--detalle {
-  font-size: var(--fs-base);
 }
 
 /* Botón cuadrado con ícono. corner-shape: squircle suaviza la curva donde el
