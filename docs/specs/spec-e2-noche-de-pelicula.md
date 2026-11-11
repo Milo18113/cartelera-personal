@@ -310,6 +310,10 @@ export type ResultadoAgregarPelicula =
   | { ok: false; motivo: 'duplicada' | 'sin_duracion' }
   | { ok: false; motivo: 'excede'; faltan: number }
 
+// Lo que devuelve el armado de la sesión: el resultado del dominio, o 'sin_tiempo' cuando
+// todavía no hay un tiempo disponible válido contra el cual comparar.
+export type ResultadoAgregar = ResultadoAgregarPelicula | { ok: false; motivo: 'sin_tiempo' }
+
 // Devuelve una copia nueva; nunca muta `actuales`. Orden de inserción = orden en la sesión (SUP-05).
 export function agregarPelicula(
   actuales: readonly PeliculaEnSesion[],
@@ -329,6 +333,10 @@ export function puedeGuardar(peliculas: readonly PeliculaEnSesion[], disponible:
 // "Noche del 11 de nov": día y mes abreviado en español, con los getters locales
 // (no UTC), para que sea el día de la persona. Meses: ene feb mar abr may jun jul ago sep oct nov dic.
 export function nombrePorDefecto(fecha: Date): string
+
+// ¿El nombre pasa de 60 caracteres? Es lo que usa la pantalla para avisar mientras se escribe,
+// sin necesitar una fecha. `normalizarNombre` también lo usa.
+export function nombreDemasiadoLargo(entrada: string): boolean
 
 export type ResultadoNombre = { ok: true; nombre: string } | { ok: false; motivo: 'demasiado_largo' }
 
@@ -384,7 +392,7 @@ export async function fetchSesion(id: number): Promise<SesionGuardada | null>
 Siguen el patrón de E1 (`useDetalleTitulo`): resultado ligado a su clave para que uno obsoleto no cuente, y `AbortController` para cancelar.
 
 - **`useDuraciones(tmdbIds)`** → `{ duraciones: Map<number, DuracionPelicula>, loading, error, reintentar }`. Consulta con `fetchDuraciones`. `reintentar` vuelve a pedir **solo** las que quedaron en `error` (HU-01-C9).
-- **`useSesionEnArmado(disponible)`** → `{ peliculas, total, restante, agregar, quitar, vaciar }`. `agregar` llama a `agregarPelicula` y devuelve su resultado para que la página muestre el mensaje; `total` y `restante` salen de `duracionTotal` y `tiempoRestante`.
+- **`useSesionEnArmado(disponible)`** (`disponible` es `null` mientras el campo de tiempo tiene un valor inválido; lo armado se conserva) → `{ peliculas, total, restante, agregar, quitar, vaciar }`. `agregar` llama a `agregarPelicula` y devuelve su resultado para que la página muestre el mensaje; `total` y `restante` salen de `duracionTotal` y `tiempoRestante`.
 - **`useGuardarSesion()`** → `{ guardando, error, guardar }`. Verifica con `puedeGuardar` antes de llamar al servicio; ignora una segunda llamada mientras `guardando` es verdadero (HU-03-C10); en error conserva la sesión armada (HU-03-C9).
 - **`useSesionesGuardadas()`** y **`useSesion(id)`** → `{ datos, loading, error, reintentar }`.
 
@@ -451,6 +459,9 @@ En ancho de celular las dos columnas se apilan: primero lo que cabe, después la
 - Guardada: «Sesión guardada.» con enlace a «Ver mis sesiones».
 - Sin sesiones: «Aún no tienes sesiones guardadas.»
 - Sesión inexistente: «No encontramos esa sesión.»
+- Sesión armada sin películas: «Aún no agregaste películas.»
+- Sin un tiempo válido: «Indica un tiempo válido para ver qué cabe.», «Indica un tiempo válido para ver cuánto te queda.», «Indica un tiempo válido para armar tu sesión.» e «Indica un tiempo válido para guardar.»
+- Campo de nombre: «Si lo dejas vacío usa la fecha de hoy» (texto de ayuda dentro del campo).
 
 ## 7. Criterios de la spec (DEBE / NO DEBE)
 
@@ -473,7 +484,7 @@ En ancho de celular las dos columnas se apilan: primero lo que cabe, después la
 
 **Servicios y hooks**
 
-- **ES-12.** NO DEBE: ningún componente ni página importa `supabase.ts` ni `tmdb.ts`.
+- **ES-12.** NO DEBE: ningún componente ni página llama a Supabase ni a TMDB, ni importa `supabase.ts` ni funciones de `tmdb.ts`. Los imports de solo tipos (`import type`) están permitidos: `tarjetas.ts`, heredado de E1, importa así `TituloTmdb`.
 - **ES-13.** DEBE: un fallo de consulta de duración se distingue de «sin duración».
 - **ES-14.** DEBE: un fallo en una película no impide mostrar las demás.
 - **ES-15.** DEBE: nunca hay más de 5 consultas de duración simultáneas.
@@ -626,6 +637,12 @@ delete from auth.users where email like 'rls-test-%@example.com';
 | E2-T10 | `scripts/test-rls-sesiones.ts` | — |
 | E2-T11 | `docs/VERIFICACION.md` | — |
 | E2-T12 | `docs/AUDITORIA.md` | `README.md` |
+
+**Archivos que no estaban en la tabla** y se agregaron al construir (hallazgo H-01 de [`AUDITORIA.md`](../AUDITORIA.md)):
+
+- `src/components/noche/mensajes.ts`: todos los textos de la sección 6 en un solo archivo. Se crea en E2-T06 y se amplía en T07, T08 y T09.
+- `src/components/noche/formato.ts`: formato de fecha y plural de «película». Se crea en E2-T09.
+- `src/pages/NochePage.tsx` se modifica también en E2-T09, para el enlace «Mis sesiones» y el de «Ver mis sesiones».
 
 ## 13. Riesgos
 

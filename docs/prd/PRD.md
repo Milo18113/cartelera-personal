@@ -132,6 +132,7 @@ Cosas que damos por ciertas porque el cliente no las fijó. Si alguna resulta fa
 - **SUP-07.** No hay límite de sesiones guardadas ni de películas por sesión, aparte del tiempo disponible.
 - **SUP-08.** Una duración de 0 minutos o ausente se trata como «sin duración conocida».
 - **SUP-09.** Si la consulta de duración falla por un problema de conexión, la app lo distingue de «sin duración conocida» y permite reintentar.
+- **SUP-10.** El campo del tiempo disponible arranca en 120 minutos, para que se vea de inmediato qué cabe en una noche típica y no se muestre un error antes de que la persona escriba.
 
 ## 10. Puntos abiertos
 
