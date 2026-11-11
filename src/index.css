@@ -1107,6 +1107,18 @@ a {
   gap: 8px;
 }
 
+/* Formulario para guardar la sesión: nombre, avisos y el botón. */
+.guardar {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.guardar .field {
+  align-self: stretch;
+}
+
 @media (max-width: 720px) {
   .noche__layout {
     grid-template-columns: 1fr;

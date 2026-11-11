@@ -8,7 +8,7 @@ import {
   TIEMPO_MINIMO,
   type ResultadoTiempo,
 } from '../../domain/nochePelicula'
-import type { ResultadoAgregar } from '../../domain/sesion'
+import { NOMBRE_MAXIMO, type ResultadoAgregar } from '../../domain/sesion'
 
 type MotivoTiempoInvalido = Extract<ResultadoTiempo, { ok: false }>['motivo']
 
@@ -61,3 +61,11 @@ export function mensajeAgregar(
 export function mensajeExcede(minutos: number): string {
   return `Tu sesión se pasa por ${minutos} min. Quita películas para poder guardarla.`
 }
+
+export function mensajeNombreLargo(): string {
+  return `El nombre admite hasta ${NOMBRE_MAXIMO} caracteres.`
+}
+
+export const MENSAJE_AGREGA_UNA = 'Agrega al menos una película para guardar.'
+export const MENSAJE_SIN_TIEMPO_GUARDAR = 'Indica un tiempo válido para guardar.'
+export const MENSAJE_GUARDADA = 'Sesión guardada.'

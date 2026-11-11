@@ -1,6 +1,14 @@
 import { describe, expect, it } from 'vitest'
 import { duracionTotal } from './nochePelicula'
-import { agregarPelicula, quitarPelicula, type PeliculaEnSesion } from './sesion'
+import {
+  agregarPelicula,
+  nombreDemasiadoLargo,
+  nombrePorDefecto,
+  normalizarNombre,
+  puedeGuardar,
+  quitarPelicula,
+  type PeliculaEnSesion,
+} from './sesion'
 
 function pelicula(tmdbId: number, minutos: number): PeliculaEnSesion {
   return { tmdbId, titulo: `Película ${tmdbId}`, posterUrl: null, minutos }
@@ -93,5 +101,103 @@ describe('quitarPelicula', () => {
     const actuales = [pelicula(1, 60), pelicula(2, 70)]
     quitarPelicula(actuales, 1)
     expect(actuales).toHaveLength(2)
+  })
+})
+
+describe('puedeGuardar', () => {
+  it('una sesión vacía no se puede guardar', () => {
+    expect(puedeGuardar([], 120)).toEqual({ ok: false, motivo: 'vacia' })
+  })
+
+  it('una sesión que cabe se puede guardar', () => {
+    expect(puedeGuardar([pelicula(1, 100)], 120)).toEqual({ ok: true })
+  })
+
+  it('el límite exacto se puede guardar', () => {
+    // 90 + 100 + 120 + 2 pausas = 330.
+    const sesion = [pelicula(1, 90), pelicula(2, 100), pelicula(3, 120)]
+    expect(puedeGuardar(sesion, 330)).toEqual({ ok: true })
+  })
+
+  it('una sesión que se pasa no se guarda y dice por cuánto', () => {
+    const sesion = [pelicula(1, 90), pelicula(2, 100), pelicula(3, 120)]
+    expect(puedeGuardar(sesion, 329)).toEqual({ ok: false, motivo: 'excede', sobran: 1 })
+  })
+
+  it('al bajar el tiempo una sesión armada deja de poder guardarse', () => {
+    const sesion = [pelicula(1, 100), pelicula(2, 95)]
+    expect(puedeGuardar(sesion, 210)).toEqual({ ok: true })
+    expect(puedeGuardar(sesion, 200)).toEqual({ ok: false, motivo: 'excede', sobran: 5 })
+  })
+})
+
+describe('nombrePorDefecto', () => {
+  it('es «Noche del 11 de nov» el 11 de noviembre', () => {
+    expect(nombrePorDefecto(new Date(2026, 10, 11))).toBe('Noche del 11 de nov')
+  })
+
+  it('el día no lleva cero a la izquierda', () => {
+    expect(nombrePorDefecto(new Date(2026, 0, 1))).toBe('Noche del 1 de ene')
+  })
+
+  it('usa el mes abreviado correcto para cada mes', () => {
+    const meses = Array.from({ length: 12 }, (_, mes) => nombrePorDefecto(new Date(2026, mes, 15)))
+    expect(meses.map((nombre) => nombre.split(' ').at(-1))).toEqual([
+      'ene',
+      'feb',
+      'mar',
+      'abr',
+      'may',
+      'jun',
+      'jul',
+      'ago',
+      'sep',
+      'oct',
+      'nov',
+      'dic',
+    ])
+  })
+})
+
+describe('normalizarNombre', () => {
+  const hoy = new Date(2026, 10, 11)
+
+  it('un nombre vacío usa el de por defecto', () => {
+    expect(normalizarNombre('', hoy)).toEqual({ ok: true, nombre: 'Noche del 11 de nov' })
+  })
+
+  it('un nombre con solo espacios también usa el de por defecto', () => {
+    expect(normalizarNombre('     ', hoy)).toEqual({ ok: true, nombre: 'Noche del 11 de nov' })
+  })
+
+  it('recorta los espacios alrededor', () => {
+    expect(normalizarNombre('  Maratón de domingo  ', hoy)).toEqual({
+      ok: true,
+      nombre: 'Maratón de domingo',
+    })
+  })
+
+  it('acepta 60 caracteres y rechaza 61', () => {
+    expect(normalizarNombre('x'.repeat(60), hoy)).toEqual({ ok: true, nombre: 'x'.repeat(60) })
+    expect(normalizarNombre('x'.repeat(61), hoy)).toEqual({ ok: false, motivo: 'demasiado_largo' })
+  })
+
+  it('un emoji cuenta como un carácter: 60 emojis caben y 61 no', () => {
+    expect(normalizarNombre('🎬'.repeat(60), hoy).ok).toBe(true)
+    expect(normalizarNombre('🎬'.repeat(61), hoy).ok).toBe(false)
+  })
+
+  it('conserva tal cual los símbolos y el texto con forma de código', () => {
+    expect(normalizarNombre('<b>hola</b> 🎬', hoy)).toEqual({ ok: true, nombre: '<b>hola</b> 🎬' })
+  })
+})
+
+describe('nombreDemasiadoLargo', () => {
+  it('los espacios de los bordes no cuentan', () => {
+    expect(nombreDemasiadoLargo(`  ${'x'.repeat(60)}  `)).toBe(false)
+  })
+
+  it('61 caracteres es demasiado largo', () => {
+    expect(nombreDemasiadoLargo('x'.repeat(61))).toBe(true)
   })
 })

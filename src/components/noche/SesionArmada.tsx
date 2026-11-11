@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import { Clock } from 'lucide-react'
 import { formatearMinutos } from '../../domain/nochePelicula'
 import type { PeliculaEnSesion } from '../../domain/sesion'
@@ -12,9 +13,18 @@ interface SesionArmadaProps {
   // Por qué no se agregó la última película, si no se pudo.
   aviso: string | null
   onQuitar: (tmdbId: number) => void
+  // Lo que va al pie de la sesión: el formulario para guardarla.
+  children?: ReactNode
 }
 
-export function SesionArmada({ peliculas, total, restante, aviso, onQuitar }: SesionArmadaProps) {
+export function SesionArmada({
+  peliculas,
+  total,
+  restante,
+  aviso,
+  onQuitar,
+  children,
+}: SesionArmadaProps) {
   return (
     <section className="noche__seccion">
       <h2 className="noche__subtitulo">Tu sesión</h2>
@@ -57,6 +67,8 @@ export function SesionArmada({ peliculas, total, restante, aviso, onQuitar }: Se
       )}
 
       <ResumenTiempo total={total} restante={restante} />
+
+      {children}
     </section>
   )
 }

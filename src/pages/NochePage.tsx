@@ -1,12 +1,23 @@
 import { useMemo, useState } from 'react'
+import { GuardarSesionForm } from '../components/noche/GuardarSesionForm'
 import { ListaCandidatas } from '../components/noche/ListaCandidatas'
 import { ListaNoDisponibles } from '../components/noche/ListaNoDisponibles'
-import { mensajeAgregar, mensajeTiempo, mensajeVacio } from '../components/noche/mensajes'
+import {
+  MENSAJE_AGREGA_UNA,
+  MENSAJE_GUARDADA,
+  MENSAJE_SIN_TIEMPO_GUARDAR,
+  mensajeAgregar,
+  mensajeNombreLargo,
+  mensajeTiempo,
+  mensajeVacio,
+} from '../components/noche/mensajes'
 import { SesionArmada } from '../components/noche/SesionArmada'
 import { TiempoDisponibleForm } from '../components/noche/TiempoDisponibleForm'
 import { clasificarCandidatas, peliculasPorVer, type Candidata } from '../domain/candidatas'
 import { validarTiempoDisponible } from '../domain/nochePelicula'
+import { nombreDemasiadoLargo, normalizarNombre, puedeGuardar } from '../domain/sesion'
 import { useDuraciones } from '../hooks/useDuraciones'
+import { useGuardarSesion } from '../hooks/useGuardarSesion'
 import { useSesionEnArmado } from '../hooks/useSesionEnArmado'
 import { useMiLista } from '../lista/useMiLista'
 
@@ -19,6 +30,8 @@ export function NochePage() {
   const lista = useMiLista()
   const [tiempoTexto, setTiempoTexto] = useState(TIEMPO_INICIAL)
   const [aviso, setAviso] = useState<string | null>(null)
+  const [nombre, setNombre] = useState('')
+  const [guardada, setGuardada] = useState(false)
   const tiempo = validarTiempoDisponible(tiempoTexto)
   const minutos = tiempo.ok ? tiempo.minutos : null
 
@@ -32,21 +45,52 @@ export function NochePage() {
     reintentar,
   } = useDuraciones(tmdbIds)
   const sesion = useSesionEnArmado(minutos)
+  const { guardando, error: errorGuardado, guardar } = useGuardarSesion()
 
   // Sin useMemo a propósito: son decenas de películas y el compilador de React ya memoriza lo
   // necesario; hacerlo a mano solo le impedía optimizar este componente.
   const clasificacion = minutos === null ? null : clasificarCandidatas(porVer, duraciones, minutos)
+
+  const evaluacionGuardar = minutos === null ? null : puedeGuardar(sesion.peliculas, minutos)
+  const errorNombre = nombreDemasiadoLargo(nombre) ? mensajeNombreLargo() : null
+  // Si la sesión se pasa no hace falta una ayuda más: ya lo explica el resumen de tiempo.
+  const ayudaGuardar =
+    evaluacionGuardar === null
+      ? MENSAJE_SIN_TIEMPO_GUARDAR
+      : !evaluacionGuardar.ok && evaluacionGuardar.motivo === 'vacia'
+        ? MENSAJE_AGREGA_UNA
+        : null
 
   const agregar = (candidata: Candidata) => {
     // La pausa solo cuenta si la sesión ya tiene películas: se mide antes de agregar.
     const hayPausa = sesion.peliculas.length > 0
     const resultado = sesion.agregar(candidata)
     setAviso(resultado.ok ? null : mensajeAgregar(resultado, candidata.titulo, hayPausa))
+    setGuardada(false)
   }
 
   const quitar = (tmdbId: number) => {
     sesion.quitar(tmdbId)
     setAviso(null)
+    setGuardada(false)
+  }
+
+  const alGuardar = async () => {
+    const nombreFinal = normalizarNombre(nombre, new Date())
+    if (!nombreFinal.ok || minutos === null) return
+
+    const id = await guardar({
+      nombre: nombreFinal.nombre,
+      tiempoDisponible: minutos,
+      peliculas: [...sesion.peliculas],
+    })
+    // Sin id no se guardó: la sesión armada se conserva para reintentar (HU-03-C9).
+    if (id === null) return
+
+    sesion.vaciar()
+    setNombre('')
+    setAviso(null)
+    setGuardada(true)
   }
 
   return (
@@ -110,15 +154,31 @@ export function NochePage() {
               )}
           </div>
 
-          {/* Columna derecha: la sesión que se está armando. */}
+          {/* Columna derecha: la sesión que se está armando y cómo guardarla. */}
           <div className="noche__columna">
+            {guardada && (
+              <p role="status" className="alert alert--ok">
+                {MENSAJE_GUARDADA}
+              </p>
+            )}
             <SesionArmada
               peliculas={sesion.peliculas}
               total={sesion.total}
               restante={sesion.restante}
               aviso={aviso}
               onQuitar={quitar}
-            />
+            >
+              <GuardarSesionForm
+                nombre={nombre}
+                errorNombre={errorNombre}
+                ayuda={ayudaGuardar}
+                error={errorGuardado}
+                guardando={guardando}
+                deshabilitado={evaluacionGuardar?.ok !== true || errorNombre !== null}
+                onCambiarNombre={setNombre}
+                onGuardar={() => void alGuardar()}
+              />
+            </SesionArmada>
           </div>
         </div>
       )}

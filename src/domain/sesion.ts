@@ -1,7 +1,7 @@
 // Sesión de «Noche de película»: lo que la persona arma y lo que queda guardado (PRD, E2).
 // Los tipos viven aquí, en el dominio, para que ni los componentes ni el servicio de Supabase
 // dependan de cómo se guardan las filas.
-import { evaluarAgregar } from './nochePelicula'
+import { evaluarAgregar, tiempoRestante } from './nochePelicula'
 
 export const NOMBRE_MAXIMO = 60
 
@@ -81,4 +81,48 @@ export function quitarPelicula(
   tmdbId: number,
 ): PeliculaEnSesion[] {
   return actuales.filter((pelicula) => pelicula.tmdbId !== tmdbId)
+}
+
+export type PuedeGuardar =
+  { ok: true } | { ok: false; motivo: 'vacia' } | { ok: false; motivo: 'excede'; sobran: number }
+
+// Una sesión se guarda si tiene al menos una película (SUP-01) y cabe en el tiempo disponible.
+// «Sobran» son los minutos que se pasa; con el límite exacto (0 de restante) sí se guarda.
+export function puedeGuardar(
+  peliculas: readonly PeliculaEnSesion[],
+  disponible: number,
+): PuedeGuardar {
+  if (peliculas.length === 0) return { ok: false, motivo: 'vacia' }
+
+  const restante = tiempoRestante(
+    disponible,
+    peliculas.map((pelicula) => pelicula.minutos),
+  )
+  return restante < 0 ? { ok: false, motivo: 'excede', sobran: -restante } : { ok: true }
+}
+
+const MESES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic']
+
+// «Noche del 11 de nov» (DEC-05). Usa los getters locales y no los UTC: debe ser el día de la
+// persona, no el del servidor. Los meses van fijos en español para que no dependan del
+// navegador. La fecha llega por parámetro: el dominio no lee el reloj.
+export function nombrePorDefecto(fecha: Date): string {
+  return `Noche del ${fecha.getDate()} de ${MESES[fecha.getMonth()]}`
+}
+
+// El largo se cuenta en caracteres Unicode, igual que char_length en la base de datos: un
+// emoji ocupa dos unidades UTF-16 pero es un solo carácter, y no debe contar doble.
+export function nombreDemasiadoLargo(entrada: string): boolean {
+  return [...entrada.trim()].length > NOMBRE_MAXIMO
+}
+
+export type ResultadoNombre =
+  { ok: true; nombre: string } | { ok: false; motivo: 'demasiado_largo' }
+
+// Recorta espacios; un nombre vacío o solo de espacios usa el de por defecto (SUP-06).
+export function normalizarNombre(entrada: string, fecha: Date): ResultadoNombre {
+  const nombre = entrada.trim()
+  if (nombre === '') return { ok: true, nombre: nombrePorDefecto(fecha) }
+  if (nombreDemasiadoLargo(nombre)) return { ok: false, motivo: 'demasiado_largo' }
+  return { ok: true, nombre }
 }
