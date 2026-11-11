@@ -775,7 +775,6 @@ a {
    una fila queden alineadas aunque un título sea corto. */
 .card__title {
   display: -webkit-box;
-  min-height: 2.5em;
   overflow: hidden;
   overflow-wrap: anywhere;
   font-size: var(--fs-base);
