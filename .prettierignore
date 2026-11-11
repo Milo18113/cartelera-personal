@@ -1,0 +1,6 @@
+dist
+node_modules
+package-lock.json
+public
+# Los documentos (PRD, specs, backlog) llevan tablas y diagramas escritos a mano.
+*.md
