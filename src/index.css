@@ -485,12 +485,68 @@ a {
   color: var(--text);
 }
 
+/* La pista se desplaza con el gesto, la rueda o las flechas; la barra nativa no se muestra. El
+   viewport existe para anclar las flechas sobre los bordes de la fila. */
+.row__viewport {
+  position: relative;
+}
+
 .row__track {
   display: flex;
   gap: 12px;
   overflow-x: auto;
   padding-bottom: 8px;
   scroll-snap-type: x proximity;
+  scrollbar-width: none;
+}
+
+.row__track::-webkit-scrollbar {
+  display: none;
+}
+
+/* Flechas sobre los bordes de la fila, a media altura del póster (que mide 1,5 veces el ancho de
+   la tarjeta), para que la información de abajo no las descentre. El z-index las pone encima del
+   enlace y del overlay de las tarjetas: un click en la flecha no abre el detalle. */
+/* Los selectores llevan el prefijo .row__viewport a propósito: .icon-btn se define más abajo en
+   la hoja con la misma especificidad, y sin el prefijo pisaría el display y la transition de
+   las flechas (en táctil las flechas seguirían visibles). */
+.row__viewport .row__flecha {
+  position: absolute;
+  top: calc(var(--card-width) * 0.75);
+  z-index: 3;
+  transform: translateY(-50%);
+  opacity: 0;
+  transition:
+    opacity 0.15s ease,
+    background 0.15s ease,
+    color 0.15s ease;
+}
+
+.row__viewport .row__flecha--anterior {
+  left: 4px;
+}
+
+.row__viewport .row__flecha--siguiente {
+  right: 4px;
+}
+
+/* Aparecen con el mouse sobre la fila o con el foco del teclado dentro de ella. */
+.row__viewport:hover .row__flecha,
+.row__viewport:focus-within .row__flecha {
+  opacity: 1;
+}
+
+/* En pantallas táctiles se navega deslizando: las flechas taparían pósters que se tocan. */
+@media (hover: none) {
+  .row__viewport .row__flecha {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .row__viewport .row__flecha {
+    transition: none;
+  }
 }
 
 .row__message {
