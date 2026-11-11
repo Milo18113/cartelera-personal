@@ -3,7 +3,7 @@
 Cómo comprobar cada criterio de las [historias](backlog/historias-e2.md) y de la [spec](specs/spec-e2-noche-de-pelicula.md) en el navegador. La columna **Resultado obtenido** la llena quien verifica, con lo que realmente vio.
 
 - **⬜** pendiente de verificar.
-- **✅ Automático** ya comprobado por `npm test` (103 tests, todos pasan). No necesita navegador.
+- **✅ Automático** ya comprobado por `npm test` (142 tests, todos pasan). No necesita navegador.
 - Para marcar un criterio como cumplido, escribe lo que viste (por ejemplo, «Cumple: vi el mensaje …»). Si no cumple, escribe qué pasó. Si no se puede probar, escribe «Sin verificar» y por qué.
 
 ## 1. Preparación
@@ -129,9 +129,89 @@ Las funciones del Proyecto 3 deben seguir funcionando igual ([`ESTADO-INICIAL.md
 | Registro, login, logout y sesión persistente al recargar. | ⬜ |
 | Las rutas protegidas redirigen a `/login` sin sesión. | ⬜ |
 | Búsqueda con año como pista, «Ver más», y estados de carga y error. | ⬜ |
-| Agregar, cambiar de estado y quitar, desde las tarjetas y desde el detalle. | ⬜ |
+| Agregar («+») y quitar (papelera) desde las tarjetas; agregar, cambiar de estado y quitar desde el detalle (con el selector). | ⬜ |
 | Calificación (1 a 5, quitar con un segundo clic) y comentario en el detalle. | ⬜ |
 | Contador por estado, filtro por estado y orden por fecha o calificación. | ⬜ |
 | Recomendaciones sin títulos ya guardados. | ⬜ |
 | `node --experimental-strip-types scripts/test-rls.ts` termina en 12/12. | ⬜ |
 | El encabezado muestra el enlace «Noche de película» y no se rompe en celular. | ⬜ |
+
+## 9. Mejoras de interfaz de E1 (E1-D01 a E1-D05)
+
+Son las mejoras que salieron del feedback del profesor ([tickets](backlog/tickets-e1-mejoras-ui.md), [spec](specs/spec-e1-mejoras-ui.md)). Se ven en las pantallas de E1, no en las de E2.
+
+Un Chrome automatizado ya recorrió estos comportamientos con los componentes reales, pero con una lista simulada y **sin Supabase**: sirve de ensayo, no sustituye este paso con la app real y tu cuenta.
+
+**Preparación.** Tu lista debe tener al menos **10 títulos** (para que «Agregadas recientemente» desborde a ancho de escritorio; si no desborda, achica la ventana), alguno con calificación y alguno sin ella, en los tres estados. Para los pasos de «+» necesitas títulos que **no** estén en tu lista: salen en «Recomendadas para ti» y en la búsqueda.
+
+### 9.1 E1-D01 — Información bajo la tarjeta
+
+| Criterio | Cómo verificarlo | Resultado esperado | Resultado obtenido |
+| --- | --- | --- | --- |
+| E1-D01-C1 | Abre el inicio sin tocar el mouse sobre las tarjetas. | Cada tarjeta muestra su título bajo el póster. | ⬜ |
+| E1-D01-C2 | Busca `dune`. | Cada resultado muestra el año bajo el título. | ⬜ |
+| E1-D01-C3 | Mira una tarjeta de un título de tu lista que tenga calificación personal. | Estrellas chicas con esa calificación. | ⬜ |
+| E1-D01-C4 | Mira una tarjeta de tu lista sin calificación y un resultado de búsqueda que no esté en tu lista. | No hay estrellas en ninguna. | ⬜ |
+| E1-D01-C5 y C10 | Busca `pirates of the caribbean` (títulos largos) y compáralo con una fila de títulos cortos. | El título largo se corta en 2 líneas con «…». Los pósters de la fila quedan alineados arriba y con el mismo alto. | ⬜ |
+| E1-D01-C9 | Mira una tarjeta con un título de una sola línea. | Debajo de la línea no queda un hueco reservado para una segunda. | ⬜ |
+| E1-D01-C6 | Pasa el mouse sobre una tarjeta; luego llega a otra solo con Tab. | En ambos casos aparece el botón de acción sobre el póster, arriba a la derecha. | ⬜ |
+| E1-D01-C7 | Modo dispositivo (Ctrl+Shift+M) con un celular táctil, y recarga. | El botón de acción se ve sin pasar el mouse. | ⬜ |
+| E1-D01-C8 | Haz click en el póster de una tarjeta, vuelve, y haz click en el título de otra. | Ambos abren el detalle. | ⬜ |
+
+### 9.2 E1-D02 — «+» y papelera en las tarjetas; selector solo en el detalle
+
+| Criterio | Cómo verificarlo | Resultado esperado | Resultado obtenido |
+| --- | --- | --- | --- |
+| E1-D02-C9 | En el inicio o la búsqueda, mira una tarjeta de un título que **no** está en tu lista. | Tiene el botón «+» y ningún selector de estado. | ⬜ |
+| E1-D02-C10 | Pulsa ese «+». | La tarjeta pasa a mostrar la papelera; el título aparece primero en «Agregadas recientemente» y en «Pendientes». | ⬜ |
+| E1-D02-C11 | Mira una tarjeta de un título que sí está en tu lista. | Solo hay papelera: ni «+» ni selector. | ⬜ |
+| E1-D02-C12 | En la búsqueda, pulsa la papelera de un título de tu lista. | Se quita y la tarjeta vuelve a mostrar «+». | ⬜ |
+| E1-D02-C13 | Con *Slow 3G*, pulsa «+» y mira la tarjeta antes de que responda. | El botón está deshabilitado hasta que termina. | ⬜ |
+| E1-D02-C14 | Abre el detalle de un título de tu lista. | Hay un selector con «Pendiente», «En progreso» y «Vista». | ⬜ |
+| E1-D02-C1 | Abre el detalle de un título que **no** está en tu lista y elige «En progreso» en «Agregar a…». | Se agrega con ese estado. | ⬜ |
+| E1-D02-C2 | En el detalle de un título «Vista», elige «En progreso» y luego «Pendiente». | Cambia cada vez; en el inicio aparece en la fila correspondiente. | ⬜ |
+| E1-D02-C3 | Elige el estado que ya tiene. | No pasa nada: ni aviso ni petición (Network). | ✅ Automático: `miLista.test.ts`, `decidirCambioEstado` devuelve `ninguno` para los tres estados. |
+| E1-D02-C4 | Con *Slow 3G*, cambia el estado en el detalle y mira el selector. | Está deshabilitado mientras dura el cambio. | ⬜ |
+| E1-D02-C5 | Prueba en el detalle: agregar, mover y elegir cualquiera de los tres estados. | Cualquier estado se puede elegir desde cualquier otro. | ⬜ |
+| E1-D02-C6 | Con *Slow 3G*, recarga el detalle. | Mientras la lista carga, el selector está deshabilitado. | ⬜ |
+| E1-D02-C7 | En el detalle, solo con teclado: Tab hasta el selector, abrirlo y elegir. | Se puede enfocar, abrir y elegir un estado. | ⬜ |
+| E1-D02-C8 | Dale calificación y comentario a un título; cambia su estado en el detalle. | La calificación y el comentario siguen ahí. | ⬜ |
+
+### 9.3 E1-D03 — Avisos (snackbar)
+
+| Criterio | Cómo verificarlo | Resultado esperado | Resultado obtenido |
+| --- | --- | --- | --- |
+| E1-D03-C1 | Pulsa «+» en una tarjeta. | Aviso «“título” agregada a Pendientes». | ⬜ |
+| E1-D03-C2 | En el detalle, cambia el estado a «Vista». | Aviso «“título” movida a Vistas». | ⬜ |
+| E1-D03-C3 | Pulsa la papelera de una tarjeta. | Aviso «“título” quitada de tu lista». | ⬜ |
+| E1-D03-C4 | Pon *Offline* y pulsa «+». | Aviso de error, con aspecto distinto al de éxito. | ⬜ |
+| E1-D03-C5 | Haz dos acciones seguidas (por ejemplo, «+» y luego una papelera). | Se ve un solo aviso: el último. | ⬜ |
+| E1-D03-C6 | Deja un aviso de éxito sin tocarlo; en otro, pulsa «Cerrar aviso». | El primero se cierra solo a los ~4 s; el segundo, al pulsar el botón. | ⬜ |
+| E1-D03-C7 | Con 360 px, provoca un aviso con un título largo. | Se ve completo, sin scroll horizontal y sin tapar el encabezado. | ⬜ |
+| E1-D03-C8 | F12 → Elements, y busca el contenedor del aviso mientras está visible. | Tiene `role="status"` y `aria-live="polite"`; el de error lleva `role="alert"`. | ⬜ |
+
+### 9.4 E1-D04 — Flechas para navegar las filas
+
+| Criterio | Cómo verificarlo | Resultado esperado | Resultado obtenido |
+| --- | --- | --- | --- |
+| E1-D04-C1 | En el inicio, mira una fila con más tarjetas de las que caben. | No hay barra de scroll horizontal. | ⬜ |
+| E1-D04-C2 | Pasa el mouse sobre esa fila. | Aparecen flechas a media altura del póster (antes no se ven). | ⬜ |
+| E1-D04-C3 | Con la fila sin desplazar, mira las flechas. | Solo la de la derecha («siguiente»). | ⬜ |
+| E1-D04-C4 | Pulsa «siguiente». | La fila avanza casi un ancho visible, aparecen tarjetas nuevas y surge la flecha de la izquierda. | ⬜ |
+| E1-D04-C5 | Sigue pulsando hasta el final. | En el extremo final solo queda la flecha de la izquierda. | ⬜ |
+| E1-D04-C6 | Mira una fila con pocas tarjetas (por ejemplo, 2) o ensancha la ventana. | No hay flechas. | ⬜ |
+| E1-D04-C7 | Modo dispositivo táctil: mira una fila y arrástrala. | No hay flechas y la fila se desplaza al arrastrar. | ⬜ |
+| E1-D04-C8 | Con Tab llega a una flecha (aparece con el foco) y pulsa Enter. En Elements, mira su nombre. | La fila se desplaza. Las flechas se llaman «Ver anteriores» y «Ver siguientes». | ⬜ |
+| E1-D04-C9 | Pulsa una flecha cuando queda sobre una tarjeta. | No abre el detalle de esa tarjeta. | ⬜ |
+| E1-D04-C10 | Cambia el ancho de la ventana con la fila a la vista. | Las flechas aparecen o desaparecen según la fila desborde o no. | ⬜ |
+| E1-D04-C11 | Con el foco en «Ver siguientes», pulsa Enter hasta llegar al final. | El foco pasa a «Ver anteriores» (se ve su anillo) y no se pierde. | ⬜ |
+| E1-D04-C12 | Desplaza «Agregadas recientemente» a la derecha. Luego pulsa «+» en una tarjeta de «Recomendadas para ti». | «Agregadas recientemente» vuelve al inicio y la tarjeta nueva se ve primero. | ⬜ |
+| E1-D04-C13 | Desplaza «Agregadas recientemente» y pulsa la papelera de una de sus tarjetas. | La fila no vuelve al inicio. | ⬜ |
+
+### 9.5 E1-D05 — Escala tipográfica
+
+| Criterio | Cómo verificarlo | Resultado esperado | Resultado obtenido |
+| --- | --- | --- | --- |
+| E1-D05-C1 | Busca `font-size` en `src/index.css` y descarta los que ya llevan `var(--fs-`. | No queda ninguno fuera de `:root`. | ✅ Inspección: la búsqueda de `font-size` sin `var(--fs-` en `index.css` no devuelve nada (la misma de DS-02). |
+| E1-D05-C2 | F12 → Elements → `<html>`, estilo de `:root`: sube `--font-base` (por ejemplo a `1.4rem`) y luego devuélvelo a su valor. | Todos los textos de la app crecen en proporción y vuelven al valor original. | ⬜ |
+| E1-D05-C3 | Recorre el inicio, la búsqueda, un detalle y «Noche de película». | En cada pantalla la jerarquía se mantiene: título de página > título de fila > texto > meta. | ⬜ |
