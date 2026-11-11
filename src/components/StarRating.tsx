@@ -4,10 +4,13 @@ import { ICON_PROPS } from './iconos'
 interface StarRatingProps {
   // 0 a 5; admite decimales (3.6 llena 3 estrellas y el 60% de la cuarta).
   valor: number
+  // 'chica' para las tarjetas; 'normal' (por defecto) para el detalle.
+  tamano?: 'normal' | 'chica'
 }
 
 const ESTRELLAS = 5
-const TAMANO_ESTRELLA = 22
+// Lado del ícono según el tamaño; el CSS (.stars__star y .stars--chica) fija la caja con el mismo valor.
+const TAMANO_ESTRELLA = { normal: 22, chica: 14 } as const
 
 // El dibujo de la estrella (con su trazo) no ocupa toda la caja de 24x24 del ícono: va de
 // ~5% a ~95% del ancho. Mapear la fracción a ese tramo hace que "60%" se vea como 60% de la
@@ -22,12 +25,13 @@ function anchoRelleno(fraccion: number): number {
 
 // Cada estrella calcula su propio relleno: la vacía va debajo y la llena encima, recortada.
 // No depende del ancho del contenedor ni de los huecos entre estrellas.
-export function StarRating({ valor }: StarRatingProps) {
+export function StarRating({ valor, tamano = 'normal' }: StarRatingProps) {
   const acotado = Math.min(Math.max(valor, 0), ESTRELLAS)
+  const lado = TAMANO_ESTRELLA[tamano]
 
   return (
     <div
-      className="stars"
+      className={tamano === 'chica' ? 'stars stars--chica' : 'stars'}
       role="img"
       aria-label={`${acotado.toFixed(1)} de ${ESTRELLAS} estrellas`}
     >
@@ -36,11 +40,11 @@ export function StarRating({ valor }: StarRatingProps) {
         const fraccion = Math.min(Math.max(acotado - i, 0), 1)
         return (
           <span key={i} className="stars__star">
-            <Star {...ICON_PROPS} size={TAMANO_ESTRELLA} aria-hidden="true" />
+            <Star {...ICON_PROPS} size={lado} aria-hidden="true" />
             <span className="stars__fill" style={{ width: `${anchoRelleno(fraccion)}%` }}>
               <Star
                 {...ICON_PROPS}
-                size={TAMANO_ESTRELLA}
+                size={lado}
                 fill="currentColor"
                 aria-hidden="true"
               />

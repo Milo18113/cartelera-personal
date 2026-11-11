@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import { useSearchParams } from 'react-router-dom'
+import { MovieCardSkeleton } from '../components/MovieCardSkeleton'
 import { MovieCardWithActions } from '../components/MovieCardWithActions'
 import { tarjetaDeTitulo } from '../components/tarjetas'
 import { claveTitulo } from '../domain/miLista'
@@ -41,7 +42,7 @@ export function SearchPage() {
       ) : busqueda.loading ? (
         <div className="grid" aria-busy="true">
           {Array.from({ length: SKELETONS }, (_, i) => (
-            <div key={i} className="card card--skeleton" />
+            <MovieCardSkeleton key={i} />
           ))}
         </div>
       ) : busqueda.error ? (

@@ -1,4 +1,5 @@
 import type { TarjetaPelicula } from './MovieCard'
+import { MovieCardSkeleton } from './MovieCardSkeleton'
 import { MovieCardWithActions } from './MovieCardWithActions'
 
 interface MovieRowProps {
@@ -35,7 +36,7 @@ export function MovieRow({
       ) : loading ? (
         <div className="row__track" aria-busy="true">
           {Array.from({ length: SKELETONS }, (_, i) => (
-            <div key={i} className="card card--skeleton" />
+            <MovieCardSkeleton key={i} />
           ))}
         </div>
       ) : peliculas.length === 0 ? (

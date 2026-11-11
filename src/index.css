@@ -463,14 +463,24 @@ a {
 }
 
 /* ---------- Tarjetas ---------- */
+/* La tarjeta es una columna: el póster (con sus acciones) y debajo la información, siempre
+   visible. El enlace al detalle cubre todo. */
 .card {
   position: relative;
+  display: flex;
   flex: 0 0 var(--card-width);
+  flex-direction: column;
+  gap: 8px;
+  scroll-snap-align: start;
+}
+
+/* Solo el póster fija la proporción 2:3 y recorta; la información de abajo queda fuera. */
+.card__media {
+  position: relative;
   aspect-ratio: 2 / 3;
   overflow: hidden;
   border-radius: var(--radius);
   background: var(--surface);
-  scroll-snap-align: start;
 }
 
 .card__poster {
@@ -480,16 +490,15 @@ a {
   object-fit: cover;
 }
 
+/* Sin póster: un ícono en lugar de repetir el título, que ya se ve debajo. */
 .card__poster--empty {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 12px;
-  text-align: center;
-  font-size: var(--fs-base);
+  color: var(--text);
 }
 
-/* Overlay encima del póster: acciones arriba, info abajo. */
+/* Overlay encima del póster: solo los controles, con hover o foco. */
 .card__overlay {
   position: absolute;
   inset: 0;
@@ -618,31 +627,47 @@ a {
   color: var(--bg);
 }
 
+/* Información siempre visible bajo el póster. */
+.card__info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* Dos líneas como máximo; el alto de dos líneas se reserva siempre para que las tarjetas de
+   una fila queden alineadas aunque un título sea corto. */
 .card__title {
+  display: -webkit-box;
+  min-height: 2.5em;
+  overflow: hidden;
+  overflow-wrap: anywhere;
   font-size: var(--fs-base);
   line-height: 1.25;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
 }
 
 .card__meta {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 8px;
-  margin-top: 2px;
+  gap: 4px 8px;
   font-size: var(--fs-sm);
-  color: #ccd;
 }
 
-.card__rating {
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
-  color: var(--color-por-ver);
+/* Líneas del esqueleto de la tarjeta: una por el título y otra más corta por el año. */
+.card__esqueleto {
+  height: calc(var(--fs-base) * 1.25);
+  border-radius: var(--radius);
 }
 
-/* Un solo estado de carga para las dos fases: esqueleto mientras llegan los datos
-   (--skeleton) y póster aún descargándose (--cargando). Barrido de luz sobre el fondo. */
-.card--skeleton,
-.card--cargando,
+.card__esqueleto--corta {
+  width: 60%;
+}
+
+/* Un solo estado de carga para las dos fases: esqueleto mientras llegan los datos y póster
+   aún descargándose. Barrido de luz sobre el fondo. */
 .skeleton {
   background: linear-gradient(
     100deg,
@@ -664,8 +689,6 @@ a {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .card--skeleton,
-  .card--cargando,
   .skeleton {
     animation: none;
   }
@@ -919,6 +942,16 @@ a {
   width: 22px;
   height: 22px;
   color: var(--surface-highlight);
+}
+
+/* Variante de las tarjetas: las mismas estrellas, más chicas (el lado del ícono lo fija StarRating). */
+.stars--chica {
+  gap: 2px;
+}
+
+.stars--chica .stars__star {
+  width: 14px;
+  height: 14px;
 }
 
 .stars__star svg {

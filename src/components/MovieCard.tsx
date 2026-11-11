@@ -1,8 +1,10 @@
 import { useState, type ReactNode } from 'react'
+import { ImageOff } from 'lucide-react'
 import { Link } from 'react-router-dom'
-import { Star } from 'lucide-react'
 import type { ItemLista, TipoContenido } from '../domain/miLista'
 import { rutaDetalle } from '../lib/rutas'
+import { ICON_PROPS } from './iconos'
+import { StarRating } from './StarRating'
 
 export interface TarjetaPelicula {
   // claveTitulo(tipo, tmdbId): única dentro de una fila y usada para marcar acciones en curso.
@@ -19,55 +21,65 @@ export interface TarjetaPelicula {
 
 interface MovieCardProps {
   pelicula: TarjetaPelicula
-  // Botones que se dibujan encima del póster (esquina superior derecha).
+  // Controles que se dibujan encima del póster (aparecen con hover o foco).
   acciones?: ReactNode
 }
 
 export function MovieCard({ pelicula, acciones }: MovieCardProps) {
   const { titulo, anio, posterUrl, calificacion } = pelicula
-  // El póster es lazy: hasta que baja, la tarjeta muestra el mismo shimmer que el esqueleto.
+  // El póster es lazy: hasta que baja, el recuadro muestra el mismo shimmer que el esqueleto.
   const [posterTerminado, setPosterTerminado] = useState(false)
   const cargandoPoster = posterUrl !== null && !posterTerminado
+  // Las tarjetas de mi lista no traen año (mi_lista no lo guarda) ni todas tienen calificación.
+  const hayMeta = Boolean(anio) || (calificacion !== null && calificacion !== undefined)
 
   return (
-    <article className={cargandoPoster ? 'card card--cargando' : 'card'}>
-      {posterUrl ? (
-        <img
-          className="card__poster"
-          src={posterUrl}
-          alt={`Póster de ${titulo}`}
-          loading="lazy"
-          onLoad={() => setPosterTerminado(true)}
-          // Si falla, se corta el shimmer; si no, quedaría cargando para siempre.
-          onError={() => setPosterTerminado(true)}
-        />
-      ) : (
-        <div className="card__poster card__poster--empty">{titulo}</div>
-      )}
+    <article className="card">
+      <div className={cargandoPoster ? 'card__media skeleton' : 'card__media'}>
+        {posterUrl ? (
+          <img
+            className="card__poster"
+            src={posterUrl}
+            alt={`Póster de ${titulo}`}
+            loading="lazy"
+            onLoad={() => setPosterTerminado(true)}
+            // Si falla, se corta el shimmer; si no, quedaría cargando para siempre.
+            onError={() => setPosterTerminado(true)}
+          />
+        ) : (
+          // Sin póster: un ícono en lugar de repetir el título, que ya se ve debajo.
+          <div className="card__poster card__poster--empty">
+            <ImageOff {...ICON_PROPS} size={32} aria-hidden="true" />
+          </div>
+        )}
+
+        {/* El overlay va sobre el póster (position: absolute) y aparece con hover/focus. Lleva
+            solo los controles: título, año y calificación ya están siempre visibles abajo. */}
+        <div className="card__overlay">
+          <div className="card__actions">{acciones}</div>
+        </div>
+      </div>
+
+      <div className="card__info">
+        <h3 className="card__title">{titulo}</h3>
+        {/* div y no p: StarRating es un div, y un div dentro de un p es HTML inválido. */}
+        {hayMeta && (
+          <div className="card__meta">
+            {anio && <span>{anio}</span>}
+            {calificacion !== null && calificacion !== undefined && (
+              <StarRating valor={calificacion} tamano="chica" />
+            )}
+          </div>
+        )}
+      </div>
 
       {/* Link real (no onClick en el article): funciona con teclado, clic medio y "abrir en pestaña".
-          Cubre toda la tarjeta; el overlay queda encima solo para los botones. */}
+          Cubre toda la tarjeta, título incluido; el overlay queda encima solo para los botones. */}
       <Link
         className="card__link"
         to={rutaDetalle(pelicula.tipo, pelicula.tmdbId)}
         aria-label={`Ver detalle de ${titulo}`}
       />
-
-      {/* El overlay va sobre el póster (position: absolute) y aparece con hover/focus. */}
-      <div className="card__overlay">
-        <div className="card__actions">{acciones}</div>
-        <div className="card__info">
-          <h3 className="card__title">{titulo}</h3>
-          <p className="card__meta">
-            {anio}
-            {calificacion != null && (
-              <span className="card__rating">
-                <Star size={12} fill="currentColor" aria-hidden="true" /> {calificacion}/5
-              </span>
-            )}
-          </p>
-        </div>
-      </div>
     </article>
   )
 }
