@@ -3,10 +3,12 @@
 import type { Clasificacion, NoDisponible } from '../../domain/candidatas'
 import {
   formatearMinutos,
+  PAUSA_MINUTOS,
   TIEMPO_MAXIMO,
   TIEMPO_MINIMO,
   type ResultadoTiempo,
 } from '../../domain/nochePelicula'
+import type { ResultadoAgregar } from '../../domain/sesion'
 
 type MotivoTiempoInvalido = Extract<ResultadoTiempo, { ok: false }>['motivo']
 
@@ -32,4 +34,30 @@ export function mensajeNoDisponible(motivo: NoDisponible['motivo']): string {
   return motivo === 'sin_duracion'
     ? 'Sin duración conocida: no se puede agregar.'
     : 'No se pudo consultar la duración.'
+}
+
+// Por qué no se agregó una película a la sesión. `hayPausa` es verdadero cuando la sesión ya
+// tenía alguna película: solo entonces la pausa forma parte de lo que falta.
+export function mensajeAgregar(
+  rechazo: Extract<ResultadoAgregar, { ok: false }>,
+  titulo: string,
+  hayPausa: boolean,
+): string {
+  switch (rechazo.motivo) {
+    case 'duplicada':
+      return `“${titulo}” ya está en tu sesión.`
+    case 'sin_duracion':
+      return 'Sin duración conocida: no se puede agregar.'
+    case 'sin_tiempo':
+      return 'Indica un tiempo válido para armar tu sesión.'
+    case 'excede': {
+      const pausa = hayPausa ? ` (incluye la pausa de ${PAUSA_MINUTOS} min)` : ''
+      return `“${titulo}” no cabe: faltan ${rechazo.faltan} min${pausa}.`
+    }
+  }
+}
+
+// La sesión armada deja de caber cuando se baja el tiempo disponible (HU-02-C8).
+export function mensajeExcede(minutos: number): string {
+  return `Tu sesión se pasa por ${minutos} min. Quita películas para poder guardarla.`
 }

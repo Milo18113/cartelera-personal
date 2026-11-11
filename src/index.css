@@ -1093,6 +1093,20 @@ a {
   flex: none;
 }
 
+/* Totales de la sesión armada: pills neutras, para no usar los colores de estado con otro
+   significado (DESIGN.md §6). */
+.resumen {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.resumen__pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
 @media (max-width: 720px) {
   .noche__layout {
     grid-template-columns: 1fr;

@@ -1,11 +1,13 @@
 import { useMemo, useState } from 'react'
 import { ListaCandidatas } from '../components/noche/ListaCandidatas'
 import { ListaNoDisponibles } from '../components/noche/ListaNoDisponibles'
-import { mensajeTiempo, mensajeVacio } from '../components/noche/mensajes'
+import { mensajeAgregar, mensajeTiempo, mensajeVacio } from '../components/noche/mensajes'
+import { SesionArmada } from '../components/noche/SesionArmada'
 import { TiempoDisponibleForm } from '../components/noche/TiempoDisponibleForm'
-import { clasificarCandidatas, peliculasPorVer } from '../domain/candidatas'
+import { clasificarCandidatas, peliculasPorVer, type Candidata } from '../domain/candidatas'
 import { validarTiempoDisponible } from '../domain/nochePelicula'
 import { useDuraciones } from '../hooks/useDuraciones'
+import { useSesionEnArmado } from '../hooks/useSesionEnArmado'
 import { useMiLista } from '../lista/useMiLista'
 
 const ESQUELETOS = 4
@@ -16,6 +18,7 @@ const TIEMPO_INICIAL = '120'
 export function NochePage() {
   const lista = useMiLista()
   const [tiempoTexto, setTiempoTexto] = useState(TIEMPO_INICIAL)
+  const [aviso, setAviso] = useState<string | null>(null)
   const tiempo = validarTiempoDisponible(tiempoTexto)
   const minutos = tiempo.ok ? tiempo.minutos : null
 
@@ -28,10 +31,23 @@ export function NochePage() {
     error: errorDuraciones,
     reintentar,
   } = useDuraciones(tmdbIds)
+  const sesion = useSesionEnArmado(minutos)
 
   // Sin useMemo a propósito: son decenas de películas y el compilador de React ya memoriza lo
   // necesario; hacerlo a mano solo le impedía optimizar este componente.
   const clasificacion = minutos === null ? null : clasificarCandidatas(porVer, duraciones, minutos)
+
+  const agregar = (candidata: Candidata) => {
+    // La pausa solo cuenta si la sesión ya tiene películas: se mide antes de agregar.
+    const hayPausa = sesion.peliculas.length > 0
+    const resultado = sesion.agregar(candidata)
+    setAviso(resultado.ok ? null : mensajeAgregar(resultado, candidata.titulo, hayPausa))
+  }
+
+  const quitar = (tmdbId: number) => {
+    sesion.quitar(tmdbId)
+    setAviso(null)
+  }
 
   return (
     <main className="noche">
@@ -71,7 +87,19 @@ export function NochePage() {
               ) : clasificacion.vacio !== null ? (
                 <p className="status-message">{mensajeVacio(clasificacion.vacio, minutos)}</p>
               ) : (
-                <ListaCandidatas candidatas={clasificacion.candidatas} />
+                <ListaCandidatas
+                  candidatas={clasificacion.candidatas}
+                  accionPara={(candidata) => (
+                    <button
+                      type="button"
+                      className="btn btn--ghost"
+                      aria-label={`Agregar ${candidata.titulo}`}
+                      onClick={() => agregar(candidata)}
+                    >
+                      Agregar
+                    </button>
+                  )}
+                />
               )}
             </section>
 
@@ -80,6 +108,17 @@ export function NochePage() {
               clasificacion.noDisponibles.length > 0 && (
                 <ListaNoDisponibles items={clasificacion.noDisponibles} onReintentar={reintentar} />
               )}
+          </div>
+
+          {/* Columna derecha: la sesión que se está armando. */}
+          <div className="noche__columna">
+            <SesionArmada
+              peliculas={sesion.peliculas}
+              total={sesion.total}
+              restante={sesion.restante}
+              aviso={aviso}
+              onQuitar={quitar}
+            />
           </div>
         </div>
       )}
