@@ -46,7 +46,7 @@ export function decidirCambioEstado(actual: Estado | null, nuevo: Estado): Cambi
 ```ts
 interface EstadoSelectProps {
   estado: Estado | null        // null = el título no está en mi lista
-  etiqueta: string             // aria-label: nombra el título («Estado de “Dune”»)
+  titulo: string               // el componente arma el aria-label: «Estado de “Dune”» o «Agregar “Dune” a mi lista»
   variante: 'tarjeta' | 'detalle'
   busy: boolean
   disabled?: boolean
