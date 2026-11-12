@@ -49,8 +49,23 @@
 
   /* Regular para todo el texto; bold (display) solo para h1, h2, pills y chips de filtro. */
   --font-body: 'Refinery 35 Regular', system-ui, 'Segoe UI', Roboto, sans-serif;
-  --font-display: 'Refinery 35 Bold', 'Refinery 35 Regular', system-ui, 'Segoe UI', Roboto,
-    sans-serif;
+  --font-display:
+    'Refinery 35 Bold', 'Refinery 35 Regular', system-ui, 'Segoe UI', Roboto, sans-serif;
+
+  /* Escala tipográfica: toda la app sale de estas dos variables. Cambiar --font-base mueve
+     todos los tamaños; cambiar --font-ratio abre o cierra la distancia entre pasos.
+     Las reglas usan solo los --fs-*, nunca un tamaño literal. El prefijo es --fs- porque
+     --text, --text-strong y --text-soft ya son colores. */
+  --font-base: 1.1rem;
+  --font-ratio: 1.15;
+  --fs-sm: calc(var(--font-base) / var(--font-ratio));
+  --fs-base: var(--font-base);
+  --fs-md: calc(var(--fs-base) * var(--font-ratio));
+  --fs-lg: calc(var(--fs-md) * var(--font-ratio));
+  --fs-xl: calc(var(--fs-lg) * var(--font-ratio));
+  --fs-2xl: calc(var(--fs-xl) * var(--font-ratio));
+  --fs-3xl: calc(var(--fs-2xl) * var(--font-ratio));
+  --fs-4xl: calc(var(--fs-3xl) * var(--font-ratio));
 
   /* Los inputs y selects heredan esta familia vía `font: inherit`. */
   font-family: var(--font-body);
@@ -138,7 +153,7 @@ a {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  font-size: 0.875rem;
+  font-size: var(--fs-base);
 }
 
 .field input,
@@ -162,7 +177,7 @@ a {
 .alert {
   border-radius: var(--radius);
   padding: 8px 12px;
-  font-size: 0.875rem;
+  font-size: var(--fs-base);
 }
 
 .alert--error {
@@ -173,6 +188,75 @@ a {
 .alert--ok {
   background: rgba(0, 224, 84, 0.12);
   color: var(--color-vista);
+}
+
+/* Snackbar: aviso flotante abajo y centrado. En celular ocupa el ancho con el margen lateral y
+   respeta el área segura inferior. La región ignora el clic; solo el aviso lo captura. */
+.snackbar__region {
+  position: fixed;
+  right: 16px;
+  bottom: calc(16px + env(safe-area-inset-bottom));
+  left: 16px;
+  z-index: 10;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.snackbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  max-width: 480px;
+  padding: 8px 8px 8px 16px;
+  border-left: 4px solid var(--color-vista);
+  border-radius: var(--radius);
+  background: var(--surface-highlight);
+  color: var(--text-strong);
+  font-size: var(--fs-base);
+  pointer-events: auto;
+  animation: snackbar-entrada 0.2s ease-out;
+}
+
+.snackbar--error {
+  border-left-color: var(--color-error);
+}
+
+.snackbar__icono {
+  flex: none;
+  color: var(--color-vista);
+}
+
+.snackbar--error .snackbar__icono {
+  color: var(--color-error);
+}
+
+.snackbar__mensaje {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.snackbar__cerrar {
+  flex: none;
+}
+
+@keyframes snackbar-entrada {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .snackbar {
+    animation: none;
+  }
 }
 
 /* ---------- Login / registro ---------- */
@@ -189,7 +273,7 @@ a {
 
 .auth__title {
   text-align: center;
-  font-size: 1.75rem;
+  font-size: var(--fs-2xl);
 }
 
 .auth__form {
@@ -200,7 +284,7 @@ a {
 
 .auth__footer {
   text-align: center;
-  font-size: 0.875rem;
+  font-size: var(--fs-base);
 }
 
 /* ---------- Layout de rutas protegidas ---------- */
@@ -222,7 +306,7 @@ a {
 
 .app__brand {
   color: var(--text-strong);
-  font-size: 1.125rem;
+  font-size: var(--fs-md);
   font-weight: 600;
   text-decoration: none;
   white-space: nowrap;
@@ -261,7 +345,7 @@ a {
   display: flex;
   align-items: center;
   gap: 12px;
-  font-size: 0.875rem;
+  font-size: var(--fs-base);
 }
 
 @media (max-width: 640px) {
@@ -290,7 +374,7 @@ a {
 }
 
 .home__title {
-  font-size: clamp(1.5rem, 4vw, 2.25rem);
+  font-size: clamp(var(--fs-xl), 4vw, var(--fs-3xl));
 }
 
 /* Pills de resumen */
@@ -310,7 +394,7 @@ a {
   border-radius: 999px;
   padding: 6px 14px;
   font-family: var(--font-display);
-  font-size: 0.875rem;
+  font-size: var(--fs-base);
   /* currentColor + color-mix: cada pill tiñe su fondo con su propio color. */
   background: color-mix(in srgb, currentColor 15%, transparent);
 }
@@ -336,35 +420,6 @@ a {
   color: var(--text);
 }
 
-/* Pill del detalle como botón: mismo comportamiento que los botones de las tarjetas
-   (hover blanco, el estado final "vista" queda deshabilitado pero sin atenuarse). */
-.pill--btn {
-  border: 0;
-  /* El shorthand reinicia familia y tamaño: se vuelven a fijar para igualar a las demás pills. */
-  font: inherit;
-  font-family: var(--font-display);
-  font-size: 0.875rem;
-  cursor: pointer;
-}
-
-.pill--btn:hover:not(:disabled) {
-  background: var(--text-strong);
-  color: var(--bg);
-}
-
-.pill--btn:disabled {
-  cursor: default;
-}
-
-.pill--btn[aria-busy='true'] {
-  opacity: 0.5;
-}
-
-.pill--btn:focus-visible {
-  outline: 2px solid var(--text-strong);
-  outline-offset: 2px;
-}
-
 /* Filtros */
 .filters {
   display: flex;
@@ -388,7 +443,7 @@ a {
   padding: 6px 14px;
   font: inherit;
   font-family: var(--font-display);
-  font-size: 0.875rem;
+  font-size: var(--fs-base);
   cursor: pointer;
 }
 
@@ -407,7 +462,7 @@ a {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 0.875rem;
+  font-size: var(--fs-base);
 }
 
 .filters__sort select {
@@ -424,10 +479,16 @@ a {
 .row__title {
   padding-bottom: 6px;
   border-bottom: 1px solid var(--border);
-  font-size: 0.875rem;
+  font-size: var(--fs-base);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--text);
+}
+
+/* La pista se desplaza con el gesto, la rueda o las flechas; la barra nativa no se muestra. El
+   viewport existe para anclar las flechas sobre los bordes de la fila. */
+.row__viewport {
+  position: relative;
 }
 
 .row__track {
@@ -436,11 +497,61 @@ a {
   overflow-x: auto;
   padding-bottom: 8px;
   scroll-snap-type: x proximity;
+  scrollbar-width: none;
+}
+
+.row__track::-webkit-scrollbar {
+  display: none;
+}
+
+/* Flechas sobre los bordes de la fila, a media altura del póster (que mide 1,5 veces el ancho de
+   la tarjeta), para que la información de abajo no las descentre. El z-index las pone encima del
+   enlace y del overlay de las tarjetas: un click en la flecha no abre el detalle. */
+/* Los selectores llevan el prefijo .row__viewport a propósito: .icon-btn se define más abajo en
+   la hoja con la misma especificidad, y sin el prefijo pisaría el display y la transition de
+   las flechas (en táctil las flechas seguirían visibles). */
+.row__viewport .row__flecha {
+  position: absolute;
+  top: calc(var(--card-width) * 0.75);
+  z-index: 3;
+  transform: translateY(-50%);
+  opacity: 0;
+  transition:
+    opacity 0.15s ease,
+    background 0.15s ease,
+    color 0.15s ease;
+}
+
+.row__viewport .row__flecha--anterior {
+  left: 4px;
+}
+
+.row__viewport .row__flecha--siguiente {
+  right: 4px;
+}
+
+/* Aparecen con el mouse sobre la fila o con el foco del teclado dentro de ella. */
+.row__viewport:hover .row__flecha,
+.row__viewport:focus-within .row__flecha {
+  opacity: 1;
+}
+
+/* En pantallas táctiles se navega deslizando: las flechas taparían pósters que se tocan. */
+@media (hover: none) {
+  .row__viewport .row__flecha {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .row__viewport .row__flecha {
+    transition: none;
+  }
 }
 
 .row__message {
   padding: 16px 0;
-  font-size: 0.875rem;
+  font-size: var(--fs-base);
 }
 
 .row__message--error {
@@ -448,14 +559,24 @@ a {
 }
 
 /* ---------- Tarjetas ---------- */
+/* La tarjeta es una columna: el póster (con sus acciones) y debajo la información, siempre
+   visible. El enlace al detalle cubre todo. */
 .card {
   position: relative;
+  display: flex;
   flex: 0 0 var(--card-width);
+  flex-direction: column;
+  gap: 8px;
+  scroll-snap-align: start;
+}
+
+/* Solo el póster fija la proporción 2:3 y recorta; la información de abajo queda fuera. */
+.card__media {
+  position: relative;
   aspect-ratio: 2 / 3;
   overflow: hidden;
   border-radius: var(--radius);
   background: var(--surface);
-  scroll-snap-align: start;
 }
 
 .card__poster {
@@ -465,16 +586,15 @@ a {
   object-fit: cover;
 }
 
+/* Sin póster: un ícono en lugar de repetir el título, que ya se ve debajo. */
 .card__poster--empty {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 12px;
-  text-align: center;
-  font-size: 0.875rem;
+  color: var(--text);
 }
 
-/* Overlay encima del póster: acciones arriba, info abajo. */
+/* Overlay encima del póster: solo los controles, con hover o foco. */
 .card__overlay {
   position: absolute;
   inset: 0;
@@ -482,13 +602,7 @@ a {
   flex-direction: column;
   justify-content: space-between;
   padding: 8px;
-  background: linear-gradient(
-    to bottom,
-    rgba(0, 0, 0, 0.55),
-    transparent 35%,
-    transparent 55%,
-    rgba(0, 0, 0, 0.85)
-  );
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.55), transparent 40%);
   opacity: 0;
   transition: opacity 0.15s ease;
   /* Encima del link de la tarjeta pero "transparente" al clic: solo los botones lo capturan. */
@@ -529,6 +643,85 @@ a {
   display: flex;
   justify-content: flex-end;
   gap: 6px;
+}
+
+/* Selector de estado (solo en el detalle): un <select> nativo con ícono y flecha propios. El color
+   es el del estado, igual que los botones de ícono y las pills; el texto siempre dice cuál es
+   (DESIGN.md §1). */
+.estado-select {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  font-size: var(--fs-base);
+  border-radius: var(--radius-icon-btn);
+  background: var(--surface-highlight);
+  color: var(--text-strong);
+}
+
+.estado-select--por_ver {
+  background: var(--color-por-ver);
+  color: var(--bg);
+}
+
+.estado-select--viendo {
+  background: var(--color-viendo);
+  color: var(--bg);
+}
+
+.estado-select--vista {
+  background: var(--color-vista);
+  color: var(--bg);
+}
+
+/* El ícono (primero) y la flecha (último) van sobre el select sin capturar el clic. */
+.estado-select svg {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.estado-select svg:first-child {
+  left: 10px;
+}
+
+.estado-select svg:last-child {
+  right: 8px;
+}
+
+.estado-select__control {
+  width: 100%;
+  min-height: var(--icon-btn-size);
+  padding: 0 30px 0 36px;
+  border: 0;
+  border-radius: inherit;
+  appearance: none;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-overflow: ellipsis;
+  cursor: pointer;
+}
+
+.estado-select__control:focus-visible {
+  outline: 2px solid var(--text-strong);
+  outline-offset: 2px;
+}
+
+.estado-select__control:disabled {
+  cursor: default;
+}
+
+/* Mientras se guarda un cambio (o la lista carga) el selector se atenúa, como los botones. */
+.estado-select:has(.estado-select__control:disabled) {
+  opacity: 0.5;
+}
+
+/* La lista desplegable la dibuja el sistema: se le fijan colores legibles sobre fondo oscuro. */
+.estado-select__control option {
+  background: var(--surface);
+  color: var(--text-strong);
 }
 
 /* Botón cuadrado con ícono. corner-shape: squircle suaviza la curva donde el
@@ -603,31 +796,46 @@ a {
   color: var(--bg);
 }
 
+/* Información siempre visible bajo el póster. */
+.card__info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* Dos líneas como máximo. El alto de las dos ya no se reserva (actualización de E1-D01 del
+   2026-11-11): lo que alinea las tarjetas de una fila es el póster, que fija su propio alto. */
 .card__title {
-  font-size: 0.8125rem;
+  display: -webkit-box;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  font-size: var(--fs-base);
   line-height: 1.25;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
 }
 
 .card__meta {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 8px;
-  margin-top: 2px;
-  font-size: 0.75rem;
-  color: #ccd;
+  gap: 4px 8px;
+  font-size: var(--fs-sm);
 }
 
-.card__rating {
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
-  color: var(--color-por-ver);
+/* Líneas del esqueleto de la tarjeta: una por el título y otra más corta por el año. */
+.card__esqueleto {
+  height: calc(var(--fs-base) * 1.25);
+  border-radius: var(--radius);
 }
 
-/* Un solo estado de carga para las dos fases: esqueleto mientras llegan los datos
-   (--skeleton) y póster aún descargándose (--cargando). Barrido de luz sobre el fondo. */
-.card--skeleton,
-.card--cargando,
+.card__esqueleto--corta {
+  width: 60%;
+}
+
+/* Un solo estado de carga para las dos fases: esqueleto mientras llegan los datos y póster
+   aún descargándose. Barrido de luz sobre el fondo. */
 .skeleton {
   background: linear-gradient(
     100deg,
@@ -649,8 +857,6 @@ a {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .card--skeleton,
-  .card--cargando,
   .skeleton {
     animation: none;
   }
@@ -665,7 +871,7 @@ a {
 }
 
 .search__title {
-  font-size: clamp(1.25rem, 3vw, 1.75rem);
+  font-size: clamp(var(--fs-lg), 3vw, var(--fs-2xl));
 }
 
 /* Grilla (no fila): las tarjetas llenan el ancho y saltan de línea. */
@@ -742,14 +948,14 @@ a {
 
 .detail__label,
 .detail__heading {
-  font-size: 0.75rem;
+  font-size: var(--fs-sm);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--text);
 }
 
 .detail__rating-text {
-  font-size: 0.875rem;
+  font-size: var(--fs-base);
 }
 
 /* El gap de .detail__main es el "spacer" entre bloques (28px); dentro de cada bloque
@@ -768,12 +974,12 @@ a {
 }
 
 .detail__title {
-  font-size: clamp(1.75rem, 4vw, 2.75rem);
+  font-size: clamp(var(--fs-2xl), 4vw, var(--fs-4xl));
   line-height: 1.1;
 }
 
 .detail__credits {
-  font-size: 1.0625rem;
+  font-size: var(--fs-md);
 }
 
 .detail__meta {
@@ -802,7 +1008,7 @@ a {
 }
 
 .detail__hint {
-  font-size: 0.875rem;
+  font-size: var(--fs-base);
 }
 
 /* Califícala: mismas estrellas que la nota general pero más grandes y clicables. */
@@ -847,7 +1053,7 @@ a {
 }
 
 .rating-input__text {
-  font-size: 0.875rem;
+  font-size: var(--fs-base);
 }
 
 /* Mi comentario */
@@ -872,7 +1078,7 @@ a {
 }
 
 .comment__status {
-  font-size: 0.875rem;
+  font-size: var(--fs-base);
   color: var(--color-vista);
 }
 
@@ -885,7 +1091,7 @@ a {
 }
 
 .confirm__text {
-  font-size: 0.875rem;
+  font-size: var(--fs-base);
 }
 
 /* Estrellas: cada una es una caja fija de ícono con la vacía debajo y la llena encima,
@@ -904,6 +1110,16 @@ a {
   width: 22px;
   height: 22px;
   color: var(--surface-highlight);
+}
+
+/* Variante de las tarjetas: las mismas estrellas, más chicas (el lado del ícono lo fija StarRating). */
+.stars--chica {
+  gap: 2px;
+}
+
+.stars--chica .stars__star {
+  width: 14px;
+  height: 14px;
 }
 
 .stars__star svg {
@@ -946,4 +1162,255 @@ a {
   .detail__side {
     max-width: 240px;
   }
+}
+
+/* ---------- Noche de película ---------- */
+/* Enlace del encabezado a la pantalla nueva. */
+.app__nav {
+  color: var(--text);
+  font-size: var(--fs-base);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.app__nav:hover {
+  color: var(--text-strong);
+}
+
+.app__nav:focus-visible {
+  outline: 2px solid var(--text-strong);
+  outline-offset: 2px;
+}
+
+.noche {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  padding-top: 32px;
+}
+
+.noche__title {
+  font-size: clamp(var(--fs-xl), 4vw, var(--fs-3xl));
+}
+
+.noche__tiempo {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 320px;
+}
+
+/* Dos columnas: lo que cabe y, al lado, la sesión que se arma. En celular se apilan. */
+.noche__layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  align-items: start;
+}
+
+/* Cada mitad del layout: sus secciones apiladas. */
+.noche__columna {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  min-width: 0;
+}
+
+.noche__seccion {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+/* Mismo encabezado de sección que las filas del inicio (.row__title). */
+.noche__subtitulo {
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+  font-size: var(--fs-base);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text);
+}
+
+.noche__lista {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.noche__esqueleto {
+  height: 64px;
+}
+
+.noche__reintentar {
+  align-self: flex-start;
+}
+
+/* Fila de película: póster chico, título, detalle y una acción opcional. */
+.fila {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px;
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.fila__poster {
+  flex: none;
+  width: 40px;
+  aspect-ratio: 2 / 3;
+  border-radius: var(--radius);
+  object-fit: cover;
+  background: var(--surface-highlight);
+}
+
+.fila__info {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.fila__titulo {
+  font-size: var(--fs-base);
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+.fila__detalle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--fs-sm);
+}
+
+.fila__accion {
+  flex: none;
+}
+
+/* Totales de la sesión armada: pills neutras, para no usar los colores de estado con otro
+   significado (DESIGN.md §6). */
+.resumen {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.resumen__pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* Formulario para guardar la sesión: nombre, avisos y el botón. */
+.guardar {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.guardar .field {
+  align-self: stretch;
+}
+
+/* Título de la pantalla con un enlace al lado. */
+.noche__cabecera {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+/* Un enlace con la forma de un botón de texto (.btn está pensado para <button>). */
+a.btn {
+  display: inline-block;
+  text-decoration: none;
+}
+
+.noche__volver {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  gap: 6px;
+  color: var(--text);
+  text-decoration: none;
+}
+
+.noche__volver:hover {
+  color: var(--text-strong);
+}
+
+.noche__volver:focus-visible {
+  outline: 2px solid var(--text-strong);
+  outline-offset: 2px;
+}
+
+/* Renglón de «Mis sesiones»: todo es un enlace al detalle. */
+.sesion-card {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 16px;
+  border-radius: var(--radius);
+  background: var(--surface);
+  text-decoration: none;
+}
+
+.sesion-card:hover {
+  background: var(--surface-highlight);
+}
+
+.sesion-card:focus-visible {
+  outline: 2px solid var(--text-strong);
+  outline-offset: 2px;
+}
+
+.sesion-card__nombre {
+  color: var(--text-strong);
+  font-size: var(--fs-md);
+}
+
+.sesion-card__meta {
+  color: var(--text);
+  font-size: var(--fs-sm);
+}
+
+@media (max-width: 720px) {
+  .noche__layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ---------- Pantalla de error de conexión (E1-D06) ---------- */
+.error-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 48px 0;
+  text-align: center;
+}
+
+/* Tope de ancho para que a 360 px no haya scroll horizontal; max-width y no width: una imagen
+   chica se queda de su tamaño en lugar de agrandarse. Es decorativa. */
+.error-page__imagen {
+  max-width: min(100%, 320px);
+  height: auto;
+}
+
+/* Mismo tamaño que el título del inicio. */
+.error-page__title {
+  font-size: clamp(var(--fs-xl), 4vw, var(--fs-3xl));
+}
+
+.error-page__message {
+  color: var(--text-soft);
 }

@@ -1,4 +1,5 @@
 import { useEffect, useState, type ReactNode } from 'react'
+import { mensajeDeError } from '../domain/errores'
 import { claveTitulo, type Estado, type ItemLista } from '../domain/miLista'
 import {
   actualizarEstado,
@@ -9,6 +10,7 @@ import {
   type CambiosOpinion,
   type NuevoItem,
 } from '../infrastructure/miListaRepository'
+import { useNotificaciones } from '../notificaciones/useNotificaciones'
 import { MiListaContext } from './miListaContextValue'
 
 interface MiListaState {
@@ -21,7 +23,7 @@ interface MiListaState {
 // muestran el mismo estado de cada título y no repiten la consulta a Supabase.
 export function MiListaProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<MiListaState>({ items: [], loading: true, error: null })
-  const [actionError, setActionError] = useState<string | null>(null)
+  const { notificar } = useNotificaciones()
   const [busy, setBusy] = useState<ReadonlySet<string>>(new Set())
 
   useEffect(() => {
@@ -46,16 +48,19 @@ export function MiListaProvider({ children }: { children: ReactNode }) {
     }
   }, [])
 
-  // Envuelve cada acción: marca la clave como ocupada, captura el error para la UI y
-  // devuelve si salió bien.
+  // Envuelve cada acción: marca la clave como ocupada, avisa el error con un snackbar (en lugar
+  // de guardarlo para que cada pantalla lo pinte) y devuelve si salió bien.
   const ejecutar = async (clave: string, accion: () => Promise<void>): Promise<boolean> => {
-    setActionError(null)
     setBusy((prev) => new Set(prev).add(clave))
     try {
       await accion()
       return true
     } catch (err) {
-      setActionError(err instanceof Error ? err.message : 'No se pudo completar la acción')
+      // Sin conexión se avisa con el mensaje amable y no con «TypeError: Failed to fetch» (E1-D06).
+      const mensaje = mensajeDeError(
+        err instanceof Error ? err.message : 'No se pudo completar la acción',
+      )
+      notificar({ tipo: 'error', mensaje })
       return false
     } finally {
       setBusy((prev) => {
@@ -99,7 +104,6 @@ export function MiListaProvider({ children }: { children: ReactNode }) {
     <MiListaContext.Provider
       value={{
         ...state,
-        actionError,
         busy,
         agregar,
         cambiarEstado,

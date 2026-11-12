@@ -1,11 +1,14 @@
 import { useMemo } from 'react'
 import { useSearchParams } from 'react-router-dom'
+import { MovieCardSkeleton } from '../components/MovieCardSkeleton'
 import { MovieCardWithActions } from '../components/MovieCardWithActions'
 import { tarjetaDeTitulo } from '../components/tarjetas'
+import { esErrorDeConexion } from '../domain/errores'
 import { claveTitulo } from '../domain/miLista'
 import { useAccionesTarjeta } from '../hooks/useAccionesTarjeta'
 import { useBusqueda } from '../hooks/useBusqueda'
 import { useMiLista } from '../lista/useMiLista'
+import { ErrorPage } from './ErrorPage'
 
 const SKELETONS = 12
 
@@ -26,22 +29,19 @@ export function SearchPage() {
     )
   }, [busqueda.items, lista.items])
 
+  // Si la primera página de resultados no logra conectar, no hay nada que mostrar (E1-D06).
+  if (busqueda.error !== null && esErrorDeConexion(busqueda.error)) return <ErrorPage />
+
   return (
     <main className="search">
       <h1 className="search__title">Resultados para “{q}”</h1>
-
-      {acciones.actionError && (
-        <p role="alert" className="alert alert--error">
-          {acciones.actionError}
-        </p>
-      )}
 
       {!busqueda.consultaValida ? (
         <p className="status-message">Escribe al menos 2 caracteres para buscar.</p>
       ) : busqueda.loading ? (
         <div className="grid" aria-busy="true">
           {Array.from({ length: SKELETONS }, (_, i) => (
-            <div key={i} className="card card--skeleton" />
+            <MovieCardSkeleton key={i} />
           ))}
         </div>
       ) : busqueda.error ? (
@@ -58,7 +58,7 @@ export function SearchPage() {
                 key={pelicula.clave}
                 pelicula={pelicula}
                 busy={acciones.busy}
-                onAvanzar={acciones.onAvanzar}
+                onAgregar={acciones.onAgregar}
                 onEliminar={acciones.onEliminar}
               />
             ))}

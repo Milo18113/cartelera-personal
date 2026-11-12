@@ -1,47 +1,35 @@
-import { siguienteEstado, type Estado } from '../domain/miLista'
-import { ETIQUETA_ACCION_ESTADO } from './etiquetasEstado'
-import { ICONO_AGREGAR, ICONO_ELIMINAR, ICONO_ESTADO, ICON_PROPS } from './iconos'
+import { ICONO_AGREGAR, ICONO_ELIMINAR, ICON_PROPS } from './iconos'
 
 interface CardActionsProps {
-  estado: Estado | null
+  // ¿El título ya está en mi lista? Define cuál de los dos botones se dibuja.
+  enLista: boolean
+  titulo: string
   busy: boolean
-  onAvanzar: () => void
+  onAgregar: () => void
   onEliminar: () => void
 }
 
-export function CardActions({ estado, busy, onAvanzar, onEliminar }: CardActionsProps) {
-  const Icono = estado === null ? ICONO_AGREGAR : ICONO_ESTADO[estado]
-  const etiqueta = ETIQUETA_ACCION_ESTADO[estado ?? 'ninguna']
-  const esFinal = siguienteEstado(estado) === null
+// Un solo botón sobre el póster que alterna según el título: «+» para agregarlo como «por ver»
+// o la papelera para quitarlo. Cambiar el estado de un título ya agregado se hace en el detalle
+// (EstadoSelect), donde está la información completa.
+export function CardActions({ enLista, titulo, busy, onAgregar, onEliminar }: CardActionsProps) {
+  const Icono = enLista ? ICONO_ELIMINAR : ICONO_AGREGAR
+  // La etiqueta nombra el título: en una fila hay muchos botones iguales y deben distinguirse.
+  const etiqueta = enLista ? `Quitar “${titulo}” de mi lista` : `Agregar “${titulo}” a pendientes`
 
   return (
-    <>
-      {/* Eliminar solo existe si el título ya está en mi lista. */}
-      {estado !== null && (
-        <button
-          type="button"
-          className="icon-btn icon-btn--eliminar"
-          aria-label="Quitar de mi lista"
-          title="Quitar de mi lista"
-          aria-busy={busy}
-          disabled={busy}
-          onClick={onEliminar}
-        >
-          <ICONO_ELIMINAR {...ICON_PROPS} aria-hidden="true" />
-        </button>
-      )}
-
+    <div className="card__actions">
       <button
         type="button"
-        className={`icon-btn icon-btn--${estado ?? 'ninguna'}`}
+        className={enLista ? 'icon-btn icon-btn--eliminar' : 'icon-btn'}
         aria-label={etiqueta}
         title={etiqueta}
         aria-busy={busy}
-        disabled={busy || esFinal}
-        onClick={onAvanzar}
+        disabled={busy}
+        onClick={enLista ? onEliminar : onAgregar}
       >
         <Icono {...ICON_PROPS} aria-hidden="true" />
       </button>
-    </>
+    </div>
   )
 }

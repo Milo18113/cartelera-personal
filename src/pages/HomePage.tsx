@@ -5,6 +5,7 @@ import { FilterBar } from '../components/FilterBar'
 import { MovieRow } from '../components/MovieRow'
 import { StatPills } from '../components/StatPills'
 import { tarjetaDeItem, tarjetaDeTitulo } from '../components/tarjetas'
+import { esErrorDeConexion } from '../domain/errores'
 import {
   ESTADOS,
   ETIQUETA_ESTADO,
@@ -17,6 +18,7 @@ import {
 import { useAccionesTarjeta } from '../hooks/useAccionesTarjeta'
 import { useRecomendaciones } from '../hooks/useRecomendaciones'
 import { useMiLista } from '../lista/useMiLista'
+import { ErrorPage } from './ErrorPage'
 
 const MAX_RECIENTES = 15
 
@@ -47,6 +49,12 @@ export function HomePage() {
 
   const estadosVisibles = ESTADOS.filter((estado) => filtro === 'todas' || filtro === estado)
 
+  // Si al cargar no hay conexión con Supabase o con TMDB, la página no tiene qué mostrar (E1-D06).
+  const sinConexion = [lista.error, recomendaciones.error].some(
+    (error) => error !== null && esErrorDeConexion(error),
+  )
+  if (sinConexion) return <ErrorPage />
+
   return (
     <main className="home">
       <h1 className="home__title">¿Qué vamos a ver hoy, {nombreDeUsuario(user)}?</h1>
@@ -60,12 +68,6 @@ export function HomePage() {
         onOrdenChange={setOrden}
       />
 
-      {acciones.actionError && (
-        <p role="alert" className="alert alert--error">
-          {acciones.actionError}
-        </p>
-      )}
-
       {/* Con un filtro activo solo se muestra la fila de ese estado: ni recomendadas ni recientes. */}
       {filtro === 'todas' && (
         <>
@@ -76,7 +78,7 @@ export function HomePage() {
             error={recomendaciones.error}
             vacio="No hay recomendaciones por ahora."
             busy={acciones.busy}
-            onAvanzar={acciones.onAvanzar}
+            onAgregar={acciones.onAgregar}
             onEliminar={acciones.onEliminar}
           />
           <MovieRow
@@ -86,7 +88,7 @@ export function HomePage() {
             error={lista.error}
             vacio="Aún no has agregado nada."
             busy={acciones.busy}
-            onAvanzar={acciones.onAvanzar}
+            onAgregar={acciones.onAgregar}
             onEliminar={acciones.onEliminar}
           />
         </>
@@ -104,7 +106,7 @@ export function HomePage() {
           error={lista.error}
           vacio="No tienes títulos en esta lista."
           busy={acciones.busy}
-          onAvanzar={acciones.onAvanzar}
+          onAgregar={acciones.onAgregar}
           onEliminar={acciones.onEliminar}
         />
       ))}

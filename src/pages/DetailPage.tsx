@@ -1,23 +1,19 @@
 import { ArrowLeft, ImageOff } from 'lucide-react'
 import { Navigate, useNavigate, useParams } from 'react-router-dom'
 import { CommentBox } from '../components/CommentBox'
-import { ETIQUETA_ACCION_ESTADO } from '../components/etiquetasEstado'
-import { EstadoPill } from '../components/EstadoPill'
+import { EstadoSelect } from '../components/EstadoSelect'
 import { ICON_PROPS } from '../components/iconos'
 import { RatingInput } from '../components/RatingInput'
 import { RemoveFromList } from '../components/RemoveFromList'
 import { StarRating } from '../components/StarRating'
 import { tarjetaDeDetalle } from '../components/tarjetas'
 import type { DetalleTitulo } from '../domain/detalle'
-import {
-  ETIQUETA_ESTADO_SINGULAR,
-  claveTitulo,
-  siguienteEstado,
-  type TipoContenido,
-} from '../domain/miLista'
+import { esErrorDeConexion } from '../domain/errores'
+import { claveTitulo, type TipoContenido } from '../domain/miLista'
 import { useAccionesTarjeta } from '../hooks/useAccionesTarjeta'
 import { useDetalleTitulo } from '../hooks/useDetalleTitulo'
 import { useMiLista } from '../lista/useMiLista'
+import { ErrorPage } from './ErrorPage'
 
 // Valida los params de /titulo/:tipo/:id antes de montar el contenido (los hooks no pueden ser condicionales).
 export function DetailPage() {
@@ -37,7 +33,6 @@ interface DetailContentProps {
 
 function DetailContent({ tipo, tmdbId }: DetailContentProps) {
   const { detalle, loading, error } = useDetalleTitulo(tipo, tmdbId)
-  const acciones = useAccionesTarjeta()
   const navigate = useNavigate()
 
   // idx > 0 significa que hay una pantalla anterior dentro de la app (búsqueda, inicio...).
@@ -48,18 +43,15 @@ function DetailContent({ tipo, tmdbId }: DetailContentProps) {
     else navigate('/')
   }
 
+  // Sin conexión con TMDB no hay detalle que mostrar: pantalla de error en lugar del contenido (E1-D06).
+  if (error !== null && esErrorDeConexion(error)) return <ErrorPage />
+
   return (
     <main className="detail">
       <button type="button" className="detail__back" onClick={volver}>
         <ArrowLeft {...ICON_PROPS} aria-hidden="true" />
         Volver
       </button>
-
-      {acciones.actionError && (
-        <p role="alert" className="alert alert--error">
-          {acciones.actionError}
-        </p>
-      )}
 
       {loading ? (
         <DetailSkeleton />
@@ -83,10 +75,10 @@ function DetailBody({ detalle }: { detalle: DetalleTitulo }) {
   )
   const estado = item?.estado ?? null
   const ocupado = acciones.busy.has(claveTitulo(detalle.tipo, detalle.tmdbId))
-  // Mismas acciones que las tarjetas del inicio: agregar → pendiente → en progreso → vista.
+  // Mismas acciones que las tarjetas del inicio: elegir un estado agrega el título o lo cambia.
   const tarjeta = tarjetaDeDetalle(detalle, item)
-  // Mientras la lista carga (o falla) no se sabe si el título ya está guardado: se bloquea la
-  // pill para no insertarlo dos veces.
+  // Mientras la lista carga (o falla) no se sabe si el título ya está guardado: se bloquea el
+  // selector para no insertarlo dos veces.
   const listaNoLista = lista.loading || lista.error !== null
 
   return (
@@ -123,15 +115,13 @@ function DetailBody({ detalle }: { detalle: DetalleTitulo }) {
 
         <div className="detail__meta">
           {detalle.generos.length > 0 && <p>{detalle.generos.join(', ')}</p>}
-          <EstadoPill
+          <EstadoSelect
             estado={estado}
+            titulo={detalle.titulo}
             busy={ocupado}
-            disabled={listaNoLista || siguienteEstado(estado) === null}
-            etiquetaAccion={ETIQUETA_ACCION_ESTADO[estado ?? 'ninguna']}
-            onClick={() => acciones.onAvanzar(tarjeta)}
-          >
-            {estado === null ? 'Agregar a mi lista' : ETIQUETA_ESTADO_SINGULAR[estado]}
-          </EstadoPill>
+            disabled={listaNoLista}
+            onCambiar={(nuevo) => acciones.onCambiarEstado(tarjeta, nuevo)}
+          />
           {item && (
             <RemoveFromList disabled={ocupado} onConfirmar={() => acciones.onEliminar(tarjeta)} />
           )}

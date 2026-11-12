@@ -1,6 +1,8 @@
 import type { ConsultaBusqueda } from '../domain/busqueda'
 import type { DetalleTitulo } from '../domain/detalle'
 import { claveTitulo, type TipoContenido } from '../domain/miLista'
+import { normalizarRuntime, type DuracionPelicula } from '../domain/duracionPelicula'
+import { mapConLimite } from '../lib/mapConLimite'
 
 const API_BASE = 'https://api.themoviedb.org/3'
 const IMAGE_BASE = 'https://image.tmdb.org/t/p'
@@ -272,4 +274,44 @@ export async function fetchDetalleTitulo(
     anio: data.first_air_date ? data.first_air_date.slice(0, 4) : null,
     creditos: { etiqueta: 'Creada por', nombres: data.created_by.map((c) => c.name) },
   }
+}
+// --- Noche de película (E2) ----------------------------------------------------------------
+
+// Cuántas duraciones se piden a la vez. La lista «por ver» puede tener decenas de películas:
+// pedirlas todas juntas saturaría a TMDB; de a 5 la pantalla carga rápido sin pasarse (PA-03).
+const CONSULTAS_SIMULTANEAS = 5
+
+// GET /movie/{id}: solo interesa `runtime`. Un fallo de red o un estado HTTP de error lanza,
+// para que no se confunda con «sin duración» (HU-01-C9, SUP-09).
+export async function fetchDuracionPelicula(
+  tmdbId: number,
+  signal?: AbortSignal,
+): Promise<DuracionPelicula> {
+  const data = await tmdbGet<{ runtime?: number | null }>(`/movie/${tmdbId}`, {}, signal)
+  return normalizarRuntime(data.runtime)
+}
+
+// Consulta varias duraciones. Un fallo en una película queda como { estado: 'error' } y no
+// cancela las demás (RF-12). Si la señal se aborta (la lista cambió o la pantalla se cerró)
+// se lanza, en lugar de devolver resultados parciales.
+export async function fetchDuraciones(
+  tmdbIds: readonly number[],
+  signal?: AbortSignal,
+): Promise<Map<number, DuracionPelicula>> {
+  const duraciones = await mapConLimite(
+    tmdbIds,
+    CONSULTAS_SIMULTANEAS,
+    async (tmdbId): Promise<DuracionPelicula> => {
+      try {
+        return await fetchDuracionPelicula(tmdbId, signal)
+      } catch (error) {
+        if (signal?.aborted) throw error
+        return { estado: 'error' }
+      }
+    },
+    signal,
+  )
+  return new Map(
+    tmdbIds.map((tmdbId, indice): [number, DuracionPelicula] => [tmdbId, duraciones[indice]]),
+  )
 }

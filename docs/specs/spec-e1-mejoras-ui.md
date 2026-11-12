@@ -1,0 +1,315 @@
+# Spec — Mejoras de interfaz de E1
+
+Describe **cómo** se construyen los tickets [E1-D01 a E1-D04](../backlog/tickets-e1-mejoras-ui.md) (E1-D05, la escala de fuentes, ya está implementada). El **qué** y las decisiones de diseño con su origen están en esos tickets; aquí solo se baja a archivos, componentes y comportamiento. La interfaz sigue [`DESIGN.md`](../../DESIGN.md) por nombre.
+
+Orden de construcción: D01 → D02 → D03 → D04. Cada ticket deja la app funcionando.
+
+## Principios
+
+- **E1 no pierde ninguna función.** Cambia la forma de la tarjeta, cómo se elige el estado, cómo se confirma una acción y cómo se recorre una fila.
+- **La lógica va al dominio** cuando se puede probar sin navegador (qué hacer al elegir un estado, los mensajes, cuándo mostrar las flechas) y se prueba con Vitest.
+- **Cero código muerto:** lo que reemplazan estos cambios se elimina (`siguienteEstado`, `etiquetasEstado.ts`, la variante botón de `EstadoPill`).
+
+## E1-D01 — Información siempre visible debajo de la tarjeta
+
+```
+article.card                       (columna)
+├── div.card__media                (2:3, recorta, shimmer mientras baja el póster)
+│   ├── img.card__poster | div.card__poster--empty
+│   └── div.card__overlay          (solo acciones; aparece con hover o foco)
+├── div.card__info                 (siempre visible)
+│   ├── h3.card__title             (máximo 2 líneas)
+│   └── p.card__meta               (año · estrellas de mi calificación)
+└── a.card__link                   (cubre todo el article)
+```
+
+- `MovieCard` pasa a esta estructura. El `article` ya no fija la proporción 2:3: la fija `card__media`. El shimmer de carga del póster pasa a `card__media` (clase `skeleton`).
+- **Estrellas:** `StarRating` suma la prop `tamano` (`'normal'` por defecto, `'chica'`). La tarjeta usa `'chica'` solo cuando hay `calificacion`; sin calificación no hay estrellas.
+- **Año:** solo si existe (las tarjetas de mi lista no lo traen, D-12). Si no hay año ni calificación no se dibuja `card__meta`.
+- **Esqueleto:** componente nuevo `MovieCardSkeleton` (media + dos líneas). Reemplaza el `div.card.card--skeleton` repetido en `MovieRow` y `SearchPage`, para que la página no salte al cargar.
+- **Título:** `-webkit-line-clamp: 2`; el alto del bloque de información es el mismo en todas las tarjetas de una fila (reserva dos líneas).
+- El overlay conserva el degradado solo arriba y abajo para dar contraste a los botones; en pantallas sin hover (`hover: none`) sigue siempre visible.
+
+### Actualización 2026-11-11 de E1-D01 — el título ya no reserva dos líneas
+
+- `.card__title` pierde el `min-height` de dos líneas. Conserva `-webkit-line-clamp: 2`: el máximo sigue siendo dos líneas con puntos suspensivos.
+- Lo que sustituye a la reserva: la alineación entre tarjetas depende solo de los pósters (`card__media` fija la proporción 2:3), que quedan alineados arriba y con el mismo alto. El bloque `card__info` mide lo que mida su contenido.
+- Efecto en la nota de arriba («el alto del bloque de información es el mismo en todas las tarjetas»): ya no se cumple y no se busca. Criterios E1-D01-C9 y E1-D01-C10.
+
+## E1-D02 — Selector de estado
+
+**Dominio (`src/domain/miLista.ts`).** Se eliminan `SIGUIENTE_ESTADO` y `siguienteEstado`. Se agrega:
+
+```ts
+export type CambioEstado = 'ninguno' | 'agregar' | 'cambiar'
+
+// Elegir el estado que ya tiene no hace nada; sin item se agrega; con item se cambia.
+export function decidirCambioEstado(actual: Estado | null, nuevo: Estado): CambioEstado
+```
+
+**Componente `EstadoSelect`** (archivo propio):
+
+```ts
+interface EstadoSelectProps {
+  estado: Estado | null        // null = el título no está en mi lista
+  titulo: string               // el componente arma el aria-label: «Estado de “Dune”» o «Agregar “Dune” a mi lista»
+  variante: 'tarjeta' | 'detalle'
+  busy: boolean
+  disabled?: boolean
+  onCambiar: (estado: Estado) => void
+}
+```
+
+- `<select>` nativo dentro de `span.estado-select`, con `appearance: none`, el ícono del estado a la izquierda (`ICONO_ESTADO` o `ICONO_AGREGAR`) y `ChevronDown` a la derecha, ambos con `ICON_PROPS` y `pointer-events: none`.
+- Sin item: opción inicial deshabilitada «Agregar a…» seleccionada. Con item: las tres opciones con `ETIQUETA_ESTADO_SINGULAR` (Pendiente, En progreso, Vista).
+- Color por estado con los mismos tokens que `icon-btn` y las pills (texto `--bg` sobre el color del estado); sin item, neutro (`--surface-highlight`). El estado nunca va solo en color: lleva ícono y texto (DS-09).
+- Variante `tarjeta`: texto en `--fs-sm`, ocupa el ancho de la tarjeta. Variante `detalle`: texto en `--fs-base`, ancho propio.
+- Elegir el estado actual no hace ninguna petición. `busy` o `disabled` deshabilitan el `select`; `busy` pone `aria-busy`.
+
+**Tarjeta.** El botón de eliminar queda arriba a la derecha; el selector va **abajo** de la tarjeta, sobre el póster, donde antes iba la información. Si el título no está en mi lista, solo aparece el selector.
+
+**`useAccionesTarjeta`.** `onAvanzar` se reemplaza por `onCambiarEstado(pelicula, estado)`, que usa `decidirCambioEstado` para llamar a `agregar` o `cambiarEstado`. Se renombra en `MovieCardWithActions`, `MovieRow`, `HomePage` y `SearchPage`.
+
+**Detalle.** La pill-botón se reemplaza por `EstadoSelect` (variante `detalle`). Sigue deshabilitado mientras la lista carga o falla, para no insertar un título dos veces.
+
+**Limpieza.** Se eliminan `src/components/etiquetasEstado.ts`, la variante botón de `EstadoPill` (queda solo informativa, la usa `StatPills`) y las reglas `.pill--btn*` de `index.css`.
+
+### Actualización 2026-11-11 de E1-D02 — el selector solo en el detalle
+
+Lo anterior describe lo construido primero y se conserva. Esta actualización cambia **solo las tarjetas** (decisiones y criterios en el [ticket](../backlog/tickets-e1-mejoras-ui.md)); el detalle no cambia.
+
+- **`CardActions`** deja de recibir el estado. Pasa a `{ enLista: boolean, titulo, busy, onAgregar, onEliminar }` y dibuja **un solo botón** `icon-btn` en `card__actions` (arriba a la derecha): la papelera (`Trash2`, `icon-btn--eliminar`) si el título está en mi lista, o el «+» (`Plus`) si no. Cada uno con `aria-label` que nombra el título («Agregar “Dune” a pendientes», «Quitar “Dune” de mi lista»), `title` y `aria-busy` y `disabled` mientras hay una petición en curso.
+- **`useAccionesTarjeta`** suma `onAgregar(pelicula)`: agrega con estado `'por_ver'` y confirma con `mensajeAgregada(titulo, 'por_ver')`. `onCambiarEstado` se queda, porque lo usa el detalle; `onEliminar` no cambia.
+- **`MovieCardWithActions`, `MovieRow`, `HomePage` y `SearchPage`** reciben y pasan `onAgregar` en lugar de `onCambiarEstado`.
+- **`EstadoSelect`** pierde la prop `variante` (solo queda el uso del detalle) y se eliminan la clase `estado-select--tarjeta` y `.card__estado`. Su tamaño de texto pasa a la regla base `.estado-select`.
+- **Overlay.** Sin el selector abajo, el degradado oscuro del pie del póster ya no sirve: queda solo el de arriba, que da contraste al botón.
+- **Dominio sin cambios:** `decidirCambioEstado` sigue en uso por el detalle.
+
+Criterios nuevos (E1-D02-C1 a C8 siguen vigentes para el selector del detalle):
+
+| Id | Criterio (resumen) | Verificación |
+| --- | --- | --- |
+| E1-D02-C9 | Una tarjeta de un título fuera de mi lista (inicio o búsqueda) tiene «+» y no tiene selector. | Navegador |
+| E1-D02-C10 | «+» agrega el título como «por ver»: aparece en «Agregadas recientemente» y en «Pendientes», y la tarjeta pasa a mostrar la papelera. | Navegador |
+| E1-D02-C11 | Una tarjeta de un título de mi lista tiene solo la papelera. | Navegador |
+| E1-D02-C12 | La papelera quita el título y, en la búsqueda, la tarjeta vuelve a mostrar «+». | Navegador |
+| E1-D02-C13 | Con una acción en curso el botón de esa tarjeta no se puede usar. | Navegador |
+| E1-D02-C14 | El detalle conserva el selector de estado con los tres estados. | Navegador |
+
+## E1-D03 — Snackbar de notificaciones
+
+**API** (`src/notificaciones/`, con el mismo patrón de contexto que `lista/` y `auth/`):
+
+```ts
+export type TipoNotificacion = 'exito' | 'error'
+export interface Notificacion { tipo: TipoNotificacion; mensaje: string }
+
+export interface NotificacionesContextValue {
+  notificar: (notificacion: Notificacion) => void
+  cerrar: () => void
+}
+```
+
+- `NotificacionesProvider` guarda **una sola** notificación: una nueva reemplaza a la anterior. Se cierra sola a los 4 s (éxito) o a los 6 s (error); `cerrar` y el botón la quitan. El temporizador se reinicia con cada notificación nueva y se limpia al desmontar.
+- `useNotificaciones()` devuelve el valor del contexto y lanza un error si se usa fuera del provider.
+- El provider se monta en `AppLayout`, por fuera de `MiListaProvider` (que lo usa para sus errores), y dibuja el `Snackbar`.
+
+**Componente `Snackbar`.**
+
+- Una región `role="status"` (`aria-live="polite"`) que siempre existe, para que el lector de pantalla anuncie lo que aparece dentro. Si la notificación es de error, su contenido lleva `role="alert"`.
+- Ícono (`CircleCheck` o `CircleAlert`), texto y un botón de cerrar con `X` y `aria-label="Cerrar aviso"`, todos con `ICON_PROPS`.
+- Fijo abajo y centrado, con ancho máximo; en celular ocupa el ancho con el margen lateral. Respeta el área segura inferior (`env(safe-area-inset-bottom)`) y no tapa el encabezado.
+- Entrada con deslizamiento corto, desactivada con `prefers-reduced-motion`.
+- Colores solo con tokens: borde izquierdo `--color-vista` (éxito) o `--color-error` (error), sobre `--surface-highlight`.
+
+**Mensajes** (`src/lista/mensajes.ts`, funciones puras con tests):
+
+```ts
+mensajeAgregada(titulo, estado)  // «“Dune” agregada a Pendientes»
+mensajeMovida(titulo, estado)    // «“Dune” movida a Vistas»
+mensajeQuitada(titulo)           // «“Dune” quitada de tu lista»
+```
+
+Usan `ETIQUETA_ESTADO` (Pendientes, En progreso, Vistas).
+
+**Integración.**
+
+- `useAccionesTarjeta` espera cada acción y, si salió bien, notifica éxito: agregar, cambiar estado o quitar.
+- Los **errores** se notifican desde `MiListaProvider` (en `ejecutar`), así cubren también guardar calificación o comentario. Por eso desaparece `actionError` del provider, del contexto, del hook y de las tres páginas, junto con los avisos rojos que mostraban arriba de la página.
+- Las pantallas de E2 no cambian.
+
+## E1-D04 — Navegación de filas con flechas
+
+**Dominio** (`src/domain/fila.ts`, funciones puras con tests):
+
+```ts
+// ¿Hay más tarjetas a la izquierda o a la derecha? Tolera 1 px de redondeo.
+export function extremosDeFila(scrollLeft: number, clientWidth: number, scrollWidth: number): {
+  anterior: boolean
+  siguiente: boolean
+}
+
+// Cuánto avanza cada click: casi un ancho visible, para que la última tarjeta vista siga a la vista.
+export function pasoDeDesplazamiento(clientWidth: number): number   // 90 % del ancho
+```
+
+**Hook `useFilaDesplazable`** (la lógica de desplazamiento no va en el componente):
+
+- Devuelve `{ pistaRef, puedeAnterior, puedeSiguiente, desplazar }`. `pistaRef` es una función de ref (guarda el elemento en el estado), para que el hook se entere cuando la pista aparece o desaparece (la fila pasa por cargando, vacío y con datos).
+- Mide con tres fuentes: el evento `scroll`, un `ResizeObserver` (cambia el ancho de la ventana) y un `MutationObserver` de los hijos (llegan o se van tarjetas). Todos llaman a `extremosDeFila`.
+- `desplazar('anterior' | 'siguiente')` hace `scrollBy` con `pasoDeDesplazamiento`; `behavior: 'smooth'`, salvo con `prefers-reduced-motion`, que usa `'auto'`.
+
+**`MovieRow`:**
+
+```
+div.row__viewport                  (position: relative)
+├── div.row__track                 (la pista que se desplaza; sin barra visible)
+├── button.icon-btn.row__flecha--anterior    (solo si hay más a la izquierda)
+└── button.icon-btn.row__flecha--siguiente   (solo si hay más a la derecha)
+```
+
+- Flechas con `ChevronLeft` y `ChevronRight`, estilo `icon-btn`, `aria-label` «Ver anteriores» y «Ver siguientes». Se **omiten** cuando no hay más hacia ese lado (no se deshabilitan).
+- Sobre los bordes de la fila, a media altura del **póster** (no de la tarjeta, para que la información de abajo no las descentre), encima de las tarjetas (`z-index` sobre el enlace y el overlay), de modo que un click en la flecha no abre el detalle.
+- Visibles con hover sobre la fila o con foco de teclado; invisibles el resto del tiempo. En `hover: none` (táctil) no se muestran: se navega deslizando.
+- La barra de scroll se oculta (`scrollbar-width: none` y `::-webkit-scrollbar`), pero la pista conserva `overflow-x: auto`, así que el gesto táctil y el trackpad siguen funcionando.
+
+## E1-D06 — Pantalla de error de conexión
+
+Agregado el 2026-11-11 a partir del hallazgo H-11 de la auditoría (decisiones y criterios en el [ticket](../backlog/tickets-e1-mejoras-ui.md)).
+
+```
+src/domain/errores.ts       MENSAJE_SIN_CONEXION, esErrorDeConexion(mensaje), mensajeDeError(mensaje)
+src/domain/errores.test.ts
+src/pages/ErrorPage.tsx     { onReintentar?: () => void }
+public/error-servidor.*     la imagen (la pone Milo)
+```
+
+**Dominio (puro).**
+- `MENSAJE_SIN_CONEXION = 'No se pudo conectar con el servidor.'`
+- `esErrorDeConexion(mensaje: string): boolean`: verdadero si el texto contiene, sin distinguir mayúsculas, «failed to fetch» (Chrome; supabase-js lo entrega como «TypeError: Failed to fetch»), «networkerror» (Firefox: «NetworkError when attempting to fetch resource.») o «load failed» (Safari). Cualquier otro texto, incluido «TMDB respondió con estado 500», es falso.
+- `mensajeDeError(mensaje: string): string`: devuelve `MENSAJE_SIN_CONEXION` si es un error de conexión y, si no, el mismo mensaje.
+- **Por qué se decide por el texto.** Los hooks y repositorios ya guardan los errores como cadenas (`error: string`) y supabase-js entrega la falla de red como un mensaje, no como un tipo. Cambiar los tres repositorios a un tipo de error propio sería un refactor ajeno a este ticket.
+
+**`ErrorPage`.**
+
+```
+main.error-page
+├── img.error-page__imagen   (alt vacío; si falla la carga se oculta con estado local)
+├── h1.error-page__title     «Error 404»
+├── p.error-page__message    (role="alert") «No se pudo conectar con el servidor.»
+└── button.btn.btn--ghost    «Reintentar» (solo si llega `onReintentar`)
+```
+
+- Es una vista completa: reemplaza el `<main>` de la página. El encabezado vive en `AppLayout`, por eso se queda.
+- Estilos en `index.css`, solo con tokens. `error-page__title` usa `clamp(var(--fs-xl), 4vw, var(--fs-3xl))`, igual que `home__title`. La imagen se limita a `min(100%, 320px)` de ancho para que a 360 px no haya scroll horizontal.
+- La imagen se pide como `/error-servidor.png`; si Milo la entrega con otra extensión, se cambia esa constante.
+
+**Cableado.** Cada pantalla decide con `esErrorDeConexion` si muestra `ErrorPage`; los demás errores se muestran como hoy.
+
+| Pantalla | Muestra `ErrorPage` cuando… | «Reintentar» |
+| --- | --- | --- |
+| Inicio | `lista.error` o `recomendaciones.error` es de conexión | no |
+| Búsqueda | `busqueda.error` (la primera página) es de conexión | no |
+| Detalle de un título | el `error` del detalle es de conexión | no |
+| «Noche de película» | `lista.error` es de conexión | no |
+| «Mis sesiones» | su `error` es de conexión | sí (`reintentar`) |
+| Detalle de una sesión | su `error` es de conexión | sí (`reintentar`) |
+
+- **«Noche de película» no cambia por película.** Si falla la duración de una película, sigue yendo a «No disponibles» con «Reintentar» (ES-13, ES-14, HU-01-C9): eso es una película, no la página.
+- **Acciones.** `MiListaProvider` (agregar, quitar, cambiar de estado, calificar), `useGuardarSesion` y el error de «Ver más» de la búsqueda pasan el mensaje por `mensajeDeError`. Siguen siendo snackbar o aviso, no reemplazan la página. En «Guardar sesión» el aviso queda «No se pudo guardar la sesión: No se pudo conectar con el servidor.» (HU-03-C9 pide ese encabezado).
+- **No cambia:** los repositorios, los hooks de carga y el resto de los textos de error.
+
+## Criterios y verificación
+
+Los ids numeran los criterios de cada ticket, en el orden en que están escritos allí. **Vitest** = test automático; **Navegador** = paso en [`VERIFICACION.md`](../VERIFICACION.md).
+
+| Id | Criterio (resumen) | Verificación |
+| --- | --- | --- |
+| E1-D01-C1 | Cada tarjeta muestra su título debajo del póster sin interacción. | Navegador |
+| E1-D01-C2 | Un resultado de búsqueda muestra su año bajo el título. | Navegador |
+| E1-D01-C3 | Un título con calificación personal muestra estrellas con esa calificación. | Navegador |
+| E1-D01-C4 | Un título sin calificación no muestra estrellas. | Navegador |
+| E1-D01-C5 | Un título largo ocupa dos líneas y las tarjetas de la fila quedan alineadas. | Navegador |
+| E1-D01-C6 | Con mouse o teclado, aparecen las acciones sobre el póster. | Navegador |
+| E1-D01-C7 | En pantalla táctil las acciones están visibles sin hover. | Navegador (emulación) |
+| E1-D01-C8 | Click en el póster o en el título lleva al detalle. | Navegador |
+| E1-D01-C9 | Un título de una línea no reserva el espacio de una segunda. | Navegador |
+| E1-D01-C10 | En una fila con títulos de una y dos líneas, los pósters quedan alineados arriba y con el mismo alto. | Navegador |
+| E1-D02-C1 | Un título fuera de mi lista se agrega con el estado que elijo. | Vitest (`decidirCambioEstado`) y Navegador |
+| E1-D02-C2 | Un título en «vista» puede pasar a «en progreso» o «pendiente» y cambia de fila. | Vitest y Navegador |
+| E1-D02-C3 | Elegir el estado actual no hace ninguna petición. | Vitest |
+| E1-D02-C4 | Durante un cambio en curso, el selector de ese título no se puede usar. | Navegador |
+| E1-D02-C5 | El detalle se comporta igual que las tarjetas. | Navegador |
+| E1-D02-C6 | En el detalle, con la lista cargando, el selector está deshabilitado. | Navegador |
+| E1-D02-C7 | Solo con teclado se puede enfocar, abrir y elegir un estado. | Navegador |
+| E1-D02-C8 | Cambiar de estado conserva calificación y comentario. | Navegador |
+| E1-D03-C1 | Agregar muestra un aviso que nombra el título y la lista. | Vitest (`mensajeAgregada`) y Navegador |
+| E1-D03-C2 | Cambiar de estado muestra un aviso con el nuevo estado. | Vitest (`mensajeMovida`) y Navegador |
+| E1-D03-C3 | Quitar muestra un aviso de que se quitó. | Vitest (`mensajeQuitada`) y Navegador |
+| E1-D03-C4 | Una acción que falla muestra un aviso de error, distinto del de éxito. | Navegador |
+| E1-D03-C5 | Un aviso nuevo reemplaza al anterior. | Navegador |
+| E1-D03-C6 | El aviso se cierra solo a los pocos segundos o con el botón. | Navegador |
+| E1-D03-C7 | En celular el aviso se ve completo, sin scroll horizontal y sin tapar el encabezado. | Navegador (360 px) |
+| E1-D03-C8 | Un lector de pantalla anuncia el texto del aviso. | Navegador (inspección del DOM) |
+| E1-D04-C1 | Una fila con más tarjetas de las que caben no muestra barra de scroll. | Navegador |
+| E1-D04-C2 | Con el mouse sobre la fila aparecen las flechas, a media altura del póster. | Navegador |
+| E1-D04-C3 | Al inicio de la fila solo aparece «siguiente». | Vitest (`extremosDeFila`) y Navegador |
+| E1-D04-C4 | «Siguiente» avanza la fila y muestra tarjetas nuevas. | Navegador |
+| E1-D04-C5 | En el extremo final solo aparece «anterior». | Vitest y Navegador |
+| E1-D04-C6 | Una fila cuyas tarjetas caben completas no muestra flechas. | Vitest y Navegador |
+| E1-D04-C7 | En táctil no hay flechas y deslizar funciona. | Navegador (emulación) |
+| E1-D04-C8 | Con Tab y Enter sobre una flecha la fila se desplaza; cada flecha tiene nombre accesible. | Navegador |
+| E1-D04-C9 | Un click en una flecha no abre el detalle de la tarjeta de abajo. | Navegador |
+| E1-D04-C10 | Al cambiar el tamaño de la ventana las flechas se actualizan. | Navegador |
+| E1-D04-C11 | Con teclado, al llegar al extremo el foco pasa a la flecha contraria y no se pierde. | Navegador |
+| E1-D04-C12 | Con «Agregadas recientemente» desplazada, agregar un título nuevo devuelve la fila al inicio y se ve la tarjeta nueva. | Vitest (`llegoNuevaAlInicio`) y Navegador |
+| E1-D04-C13 | Quitar una tarjeta de una fila desplazada no la devuelve al inicio. | Vitest y Navegador |
+| E1-D04-C14 | Con Tab, en cada fila las flechas que existan se alcanzan antes que las tarjetas de esa fila. | Navegador |
+| E1-D04-C15 | Las flechas siguen en el mismo lugar y ninguna tarjeta se mueve. | Navegador |
+| E1-D06-C1 | Si al cargar no hay conexión con Supabase o con TMDB, las seis pantallas muestran `ErrorPage` en lugar del contenido, con el encabezado visible. | Vitest (`esErrorDeConexion`) y Navegador |
+| E1-D06-C2 | Un error que no es de conexión (por ejemplo, un estado 500) conserva el mensaje de siempre. | Vitest y Navegador |
+| E1-D06-C3 | Una acción fallida por conexión muestra «No se pudo conectar con el servidor.» sin texto técnico, y la página sigue en su lugar. | Vitest (`mensajeDeError`) y Navegador |
+| E1-D06-C4 | «Mis sesiones» y el detalle de una sesión conservan «Reintentar»; las demás pantallas no llevan botón. | Navegador |
+| E1-D06-C5 | A 360 px la pantalla de error se ve completa y sin scroll horizontal. | Navegador (360 px) |
+| E1-D06-C6 | Un lector de pantalla anuncia el texto del error. | Navegador (inspección del DOM) |
+| E1-D06-C7 | Sin imagen, o si no carga, no queda un ícono de imagen rota. | Navegador |
+
+**Actualización 2026-11-11 de E1-D04 — foco.** El hook también devuelve `anteriorRef` y `siguienteRef` (funciones de ref, como `pistaRef`) y recuerda cuál fue la última flecha usada. Cuando esa flecha desaparece porque se llegó a ese extremo, y el foco quedó en el `body` (se perdió), lo pasa a la flecha contraria. Si el foco está en otro control, no lo toca.
+
+**Actualización 2026-11-11 (2) de E1-D04 — volver al inicio.** Dominio nuevo en `domain/fila.ts`:
+
+```ts
+// ¿Llegó una tarjeta nueva al principio de la fila? Cuenta solo si la primera de ahora no estaba
+// antes: si la primera cambia porque se quitó la que estaba, o por un reorden, no hay nada nuevo.
+export function llegoNuevaAlInicio(clavesAntes: readonly string[], clavesAhora: readonly string[]): boolean
+```
+
+`useFilaDesplazable` recibe las claves de las tarjetas de la fila, recuerda las anteriores y, cuando `llegoNuevaAlInicio` es verdadero, lleva la pista a `scrollLeft: 0` (suave, o inmediato con `prefers-reduced-motion`). `MovieRow` le pasa `peliculas.map(p => p.clave)`. Casos de Vitest: llega una nueva al inicio (sí); sin cambios (no); se quita la primera (no); reorden (no); se agrega al final (no); lista vacía ahora (no); primera carga con la fila vacía antes (sí, sin efecto visible: ya está en 0).
+
+**Actualización 2026-11-11 (3) de E1-D04 — flechas antes de las tarjetas.** En `MovieRow` las dos flechas (cada una existe solo si hay más tarjetas hacia ese lado) pasan a ir antes de `row__track` en el JSX, primero «anterior» y luego «siguiente». Es solo un cambio de orden: las flechas ya son `position: absolute` dentro de `row__viewport`, y las reglas del CSS (`.row__viewport .row__flecha`, `:hover`, `:focus-within`) son selectores descendientes, sin hermanos adyacentes (`+` ni `~`). Por eso el aspecto no cambia (E1-D04-C15) y el orden de Tab sí (E1-D04-C14). Los `ref` de las flechas y la lógica del foco de `useFilaDesplazable` no cambian: no dependen del orden.
+
+Criterios de interfaz de [`DESIGN.md`](../../DESIGN.md) que aplican a todo lo nuevo: DS-01 a DS-12.
+
+## Casos de prueba de Vitest
+
+- `miLista.test.ts`: `decidirCambioEstado(null, 'por_ver')` → agregar (y con cada estado); `('vista', 'viendo')` y `('vista', 'por_ver')` → cambiar; el mismo estado de entrada → ninguno, para los tres.
+- `mensajes.test.ts` (en `src/lista/`): los tres mensajes para cada estado, con el título entre comillas inglesas y la concordancia correcta.
+- `fila.test.ts`: al inicio (`scrollLeft` 0) solo siguiente; a mitad, ambas; al final (`scrollLeft + clientWidth` igual a `scrollWidth`) solo anterior; contenido que cabe, ninguna; tolerancia de 1 px; `pasoDeDesplazamiento(1000)` es 900.
+- `errores.test.ts` (E1-D06): «TypeError: Failed to fetch», «Failed to fetch», «NetworkError when attempting to fetch resource.» y «Load failed» son errores de conexión (también en mayúsculas); «TMDB respondió con estado 500», un `unique` violado y la cadena vacía no lo son; `mensajeDeError` devuelve el mensaje amable para los primeros y el mismo texto para los demás.
+
+## Ticket → archivos
+
+| Ticket | Se crea | Se modifica | Se elimina |
+| --- | --- | --- | --- |
+| E1-D01 | `components/MovieCardSkeleton.tsx` | `MovieCard.tsx`, `StarRating.tsx`, `MovieRow.tsx`, `pages/SearchPage.tsx`, `index.css` | — |
+| E1-D02 | `components/EstadoSelect.tsx`, `domain/miLista.test.ts` | `domain/miLista.ts`, `CardActions.tsx`, `MovieCardWithActions.tsx`, `MovieRow.tsx`, `EstadoPill.tsx`, `hooks/useAccionesTarjeta.ts`, `pages/HomePage.tsx`, `SearchPage.tsx`, `DetailPage.tsx`, `index.css` | `components/etiquetasEstado.ts` |
+| E1-D03 | `notificaciones/NotificacionesProvider.tsx`, `notificacionesContextValue.ts`, `useNotificaciones.ts`, `components/Snackbar.tsx`, `lista/mensajes.ts`, `lista/mensajes.test.ts` | `components/AppLayout.tsx`, `lista/MiListaProvider.tsx`, `lista/miListaContextValue.ts`, `hooks/useAccionesTarjeta.ts`, `pages/HomePage.tsx`, `SearchPage.tsx`, `DetailPage.tsx`, `index.css` | — |
+| E1-D04 | `domain/fila.ts`, `domain/fila.test.ts`, `hooks/useFilaDesplazable.ts` | `components/MovieRow.tsx`, `index.css` | — |
+| E1-D06 | `domain/errores.ts`, `domain/errores.test.ts`, `pages/ErrorPage.tsx`, `public/error-servidor.*` | `pages/HomePage.tsx`, `SearchPage.tsx`, `DetailPage.tsx`, `NochePage.tsx`, `SesionesPage.tsx`, `SesionDetailPage.tsx`, `lista/MiListaProvider.tsx`, `hooks/useGuardarSesion.ts`, `hooks/useBusqueda.ts`, `index.css` | — |
+
+## Riesgos
+
+- **Ancho de la tarjeta.** `--card-width` es 150 px y el texto base ahora es 17.6 px: el selector de la tarjeta usa `--fs-sm` y ocupa todo el ancho para que «En progreso» quepa. Si en el navegador se corta, se ajusta el relleno del selector, no el ancho de la tarjeta.
+- **Estilo de un `<select>` nativo.** Con `appearance: none` y un ícono propio se ve igual en los navegadores principales; el desplegable lo dibuja el sistema, y es lo que se quiere (accesible por teclado y por lector de pantalla).
+- **`line-clamp`.** `-webkit-line-clamp` funciona en todos los navegadores actuales; en uno que no lo soporte el título se vería completo, sin romper el diseño.
+- **Cambia E1.** Estos tickets modifican la interfaz que el brief pide dejar «funcionando igual». Se compensa con la lista de regresión de E1 en `VERIFICACION.md`, que se amplía con estos criterios.
