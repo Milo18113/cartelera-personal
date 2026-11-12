@@ -252,7 +252,8 @@ Lo que esta auditoría encontró y qué se hizo. Lo corregido se corrigió de ar
 - **Deuda de E1 que sigue sin hacerse**: D-05, D-06 y D-10 de [`ESTADO-INICIAL.md`](ESTADO-INICIAL.md), y de D-11 los mensajes crudos que no son de conexión (los de conexión los cubre E1-D06). Se resolvieron D-01 a D-04, D-09 y D-13 con los tickets E1-D01 a E1-D05 (sección 4). El brief pide registrar la deuda, no corregirla toda en este entregable.
 - **La imagen de la pantalla de error**: va en `public/error-servidor.png` (la pone Milo). Sin ella la pantalla funciona y se ve igual sin imagen (E1-D06-C7).
 - **Datos de prueba**: la verificación creó cuentas `rls-test-*@example.com` (los scripts) y `rls-test-ui-*@example.com` (el navegador) en Supabase, con sus listas y sesiones. Milo borró las de la primera corrida; la tercera pasada creó otras. Las sesiones no se pueden borrar desde la app. Para borrarlas todas (SQL Editor): `delete from auth.users where email like 'rls-test-%@example.com';`.
-- **Puntos extra del brief**: «Llenar mi noche», filtro por género, marcar una sesión como realizada, validación adicional en la base de datos, revisión adversarial y publicación. No entraron por el plazo; cada uno requeriría su historia, sus criterios y su lugar en la spec **antes** del código. La versión desplegada en Vercel corresponde a E1, no incluye E2.
+- **Puntos extra del brief**: «Llenar mi noche», filtro por género, marcar una sesión como realizada, validación adicional en la base de datos y revisión adversarial. No entraron por el plazo; cada uno requeriría su historia, sus criterios y su lugar en la spec **antes** del código.
+- **Publicación (punto extra, hecha):** la app está en Vercel con Noche de película: <https://cartelera-personal-brown.vercel.app>. El 2026-11-11 se leyó el código publicado y trae Noche de película y las mejoras E1-D01 a E1-D06; no se recorrió con una sesión iniciada.
 
 ## 7. Cómo se completó esta auditoría
 
