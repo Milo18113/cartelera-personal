@@ -803,8 +803,8 @@ a {
   gap: 4px;
 }
 
-/* Dos líneas como máximo; el alto de dos líneas se reserva siempre para que las tarjetas de
-   una fila queden alineadas aunque un título sea corto. */
+/* Dos líneas como máximo. El alto de las dos ya no se reserva (actualización de E1-D01 del
+   2026-11-11): lo que alinea las tarjetas de una fila es el póster, que fija su propio alto. */
 .card__title {
   display: -webkit-box;
   overflow: hidden;
