@@ -117,6 +117,12 @@ Con el tiempo disponible escrito, a la izquierda lo que cabe y a la derecha la s
 
 ![Pantalla de Mis sesiones](docs/capturas/captura_sesiones.png)
 
+### Pantalla de error
+
+Cuando una página no logra conectar con Supabase o con TMDB al cargar. Si fallan solo una acción (agregar, quitar, guardar), la página se queda donde está y el aviso dice lo mismo.
+
+![Pantalla de error de conexión](docs/capturas/captura_error.png)
+
 ## Instalación
 
 ### Requisitos previos

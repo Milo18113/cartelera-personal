@@ -226,7 +226,7 @@ Criterios de los [tickets](backlog/tickets-e1-mejoras-ui.md) y la [spec](specs/s
 | E1-D06-C4 | **Cumple** | «Mis sesiones» y el detalle de una sesión tienen «Reintentar» y, al quitar el bloqueo y pulsarlo, cargan el contenido; sin botón en: Inicio (Supabase caído), Inicio (TMDB caído), Búsqueda, Detalle de un título, Noche de película |
 | E1-D06-C5 | **Cumple** | a 360 px la pantalla ocupa de 16 a 344 px y no hay scroll horizontal (true) |
 | E1-D06-C6 | **Cumple** | en los 7 casos el texto lleva role="alert" y hay un solo h1 |
-| E1-D06-C7 | **Cumple** | sin archivo de imagen: 0 imágenes rotas en pantalla; con imagen: se muestra (ancho natural 1) con alt vacío |
+| E1-D06-C7 | **Cumple** | sin archivo de imagen: 0 imágenes rotas en pantalla; con imagen: se muestra (ancho natural 1) con alt vacío Con la imagen definitiva (`public/error-servidor.png`, sin el cuadriculado que traía el archivo original y reducida a 640 px) se ve centrada, a 320 px de ancho, sobre el fondo de la app. |
 
 ## 5. Hallazgos
 
