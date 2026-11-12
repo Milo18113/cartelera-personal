@@ -17,8 +17,7 @@ Tipos: **Dominio** (regla pura), **Datos** (esquema y seguridad), **Infraestruct
 
 ---
 
-## E2-T01 — Regla de «cabe» y duración total
-
+## ~~E2-T01 — Regla de «cabe» y duración total~~  ✅ COMPLETO
 **Tipo:** Dominio · **Historias:** HU-01, HU-02 · **Dependencias:** ninguna
 
 Funciones puras, sin red ni base de datos, que reciben el tiempo, las duraciones y la pausa: validar el tiempo disponible, calcular la duración total, decidir si una sesión cabe, calcular el tiempo restante y decidir si una película cabe en lo que queda (con los minutos que faltan o sobran). Incluye instalar y configurar Vitest.
@@ -29,8 +28,7 @@ Funciones puras, sin red ni base de datos, que reciben el tiempo, las duraciones
 - El archivo no importa React, Supabase ni TMDB.
 - `npm test` corre los tests y queda documentado en `AGENTS.md`.
 
-## E2-T02 — Películas candidatas y su orden
-
+## ~~E2-T02 — Películas candidatas y su orden~~  ✅ COMPLETO
 **Tipo:** Dominio · **Historias:** HU-01 (C4 a C7, C10, C11) · **Dependencias:** T01
 
 Función pura que, dada la lista de la persona y las duraciones conocidas, separa las películas que se ofrecen (por ver, película, con duración, que caben solas) de las no disponibles (con su motivo), y las ordena: la más antigua en la lista primero, desempate por título.
@@ -38,8 +36,7 @@ Función pura que, dada la lista de la persona y las duraciones conocidas, separ
 **Definition of Done**
 - Tests: excluye series y otros estados; la duración igual al tiempo entra; 0 o ausente es «no disponible»; el orden y el desempate; distingue «lista vacía» de «ninguna cabe».
 
-## E2-T03 — Esquema de sesiones y seguridad
-
+## ~~E2-T03 — Esquema de sesiones y seguridad~~  ✅ COMPLETO
 **Tipo:** Datos · **Historias:** HU-03, HU-04, HU-05 · **Dependencias:** spec
 
 Migración SQL con el modelo de sesiones y de las películas de cada sesión (que guardan título, duración y póster), y las políticas de seguridad por usuario.
@@ -50,8 +47,7 @@ Migración SQL con el modelo de sesiones y de las películas de cada sesión (qu
 - Sin política de modificar ni de eliminar (DEC-03).
 - Nombre limitado a 60 caracteres y una película una sola vez por sesión, garantizados en la base.
 
-## E2-T04 — Servicio de duración de películas
-
+## ~~E2-T04 — Servicio de duración de películas~~  ✅ COMPLETO
 **Tipo:** Infraestructura · **Historias:** HU-01 · **Dependencias:** T01 (usa el tipo y la función de duración del dominio)
 
 Servicio que consulta a TMDB la duración de una película. Devuelve los minutos o «sin duración» (0 o ausente) y distingue un fallo de consulta, que se puede reintentar.
@@ -61,8 +57,7 @@ Servicio que consulta a TMDB la duración de una película. Devuelve los minutos
 - El detalle de títulos de E1 sigue igual.
 - El mapeo de la duración usa la función pura de T01 (ya probada). El límite de peticiones simultáneas lo aplica un helper genérico, `mapConLimite`, con su propio test.
 
-## E2-T05 — Servicio de sesiones
-
+## ~~E2-T05 — Servicio de sesiones~~  ✅ COMPLETO
 **Tipo:** Infraestructura · **Historias:** HU-03, HU-04 · **Dependencias:** T03
 
 Servicio que guarda una sesión (nombre, tiempo disponible y películas), lista las sesiones de la persona de la más reciente a la más antigua y trae el detalle de una. No edita ni elimina.
@@ -72,8 +67,7 @@ Servicio que guarda una sesión (nombre, tiempo disponible y películas), lista 
 - Los errores llegan como mensajes legibles.
 - Tipos propios del dominio, sin `any`.
 
-## E2-T06 — Pantalla «Noche de película»: tiempo y películas que caben
-
+## ~~E2-T06 — Pantalla «Noche de película»: tiempo y películas que caben~~  ✅ COMPLETO
 **Tipo:** UI · **Historias:** HU-01, HU-05 (C1) · **Dependencias:** T01, T02, T04
 
 Ruta protegida con enlace en el encabezado. Campo de tiempo con sus mensajes de validación, lista de películas que caben con su duración, no disponibles con su motivo, y estados de carga, error y vacío.
@@ -83,8 +77,7 @@ Ruta protegida con enlace en el encabezado. Campo de tiempo con sus mensajes de 
 - A 360 px de ancho no hay scroll horizontal (DS-07).
 - Sin sesión iniciada, la ruta pide iniciar sesión.
 
-## E2-T07 — Armar la sesión
-
+## ~~E2-T07 — Armar la sesión~~  ✅ COMPLETO
 **Tipo:** UI · **Historias:** HU-02 · **Dependencias:** T01, T06
 
 Agregar y quitar películas con la duración total y el tiempo restante siempre visibles; rechazo con explicación cuando no caben; manejo del cambio de tiempo con una sesión armada.
@@ -93,8 +86,7 @@ Agregar y quitar películas con la duración total y el tiempo restante siempre 
 - Criterios HU-02-C1 a C10 comprobados en el navegador, incluido el ejemplo de 330 minutos.
 - La interfaz solo muestra resultados de las funciones de T01; no repite cuentas.
 
-## E2-T08 — Guardar la sesión
-
+## ~~E2-T08 — Guardar la sesión~~  ✅ COMPLETO
 **Tipo:** UI · **Historias:** HU-03 · **Dependencias:** T05, T07
 
 Campo de nombre, nombre por defecto, confirmación, error que conserva lo armado y protección contra doble envío.
@@ -103,8 +95,7 @@ Campo de nombre, nombre por defecto, confirmación, error que conserva lo armado
 - Criterios HU-03-C1 a C11 comprobados en el navegador.
 - Las películas guardadas siguen «por ver» en la lista de E1.
 
-## E2-T09 — Sesiones guardadas: lista y detalle
-
+## ~~E2-T09 — Sesiones guardadas: lista y detalle~~  ✅ COMPLETO
 **Tipo:** UI · **Historias:** HU-04 · **Dependencias:** T05
 
 Pantalla con la lista de sesiones y pantalla de detalle, ambas protegidas, con estados de carga, error y vacío. Sin acciones de editar ni eliminar.
@@ -112,8 +103,7 @@ Pantalla con la lista de sesiones y pantalla de detalle, ambas protegidas, con e
 **Definition of Done**
 - Criterios HU-04-C1 a C7 comprobados, incluida una sesión con una película que se quitó de la lista.
 
-## E2-T10 — Prueba de seguridad con dos cuentas
-
+## ~~E2-T10 — Prueba de seguridad con dos cuentas~~  ✅ COMPLETO
 **Tipo:** Prueba · **Historias:** HU-05 · **Dependencias:** T03
 
 Script hermano de `scripts/test-rls.ts` (que no se modifica) para las sesiones: dos cuentas contra la API, sin pasar por la interfaz.
@@ -124,8 +114,7 @@ Script hermano de `scripts/test-rls.ts` (que no se modifica) para las sesiones: 
 - Documenta cómo limpiar los datos de prueba: las sesiones no se pueden eliminar desde la API (DEC-03), así que se borran los usuarios de prueba con SQL y sus sesiones caen por cascada.
 - La salida de la ejecución queda como evidencia.
 
-## E2-T11 — Verificación en el navegador
-
+## ~~E2-T11 — Verificación en el navegador~~  ✅ COMPLETO
 **Tipo:** Documento · **Historias:** todas · **Dependencias:** T06 a T10
 
 `docs/VERIFICACION.md`: cada criterio con los pasos para comprobarlo y la columna «resultado obtenido» que llena el estudiante. Incluye la lista de regresión de E1 de `docs/ESTADO-INICIAL.md`.
@@ -134,8 +123,7 @@ Script hermano de `scripts/test-rls.ts` (que no se modifica) para las sesiones: 
 - Todos los criterios de HU-01 a HU-05 tienen su fila y su resultado.
 - La regresión de E1 está marcada.
 
-## E2-T12 — Auditoría y cierre
-
+## ~~E2-T12 — Auditoría y cierre~~  ✅ COMPLETO
 **Tipo:** Documento · **Historias:** todas · **Dependencias:** T11
 
 `docs/AUDITORIA.md` con cada criterio en «cumple», «no cumple» o «sin verificar» y su evidencia; lo que la auditoría encuentre se corrige de arriba hacia abajo o se registra como pendiente con su razón. Actualización del README.

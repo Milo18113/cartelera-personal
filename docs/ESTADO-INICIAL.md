@@ -116,14 +116,16 @@ Lista de pendientes heredados. Los marcados con ticket se resuelven en este entr
 
 Checklist de regresión: al final del Entregable 4 todo esto se comporta igual (salvo lo que cambian explícitamente los tickets E1-D01 a E1-D05).
 
-- [ ] Registro, login, logout y sesión persistente al recargar.
-- [ ] Rutas protegidas redirigen a `/login` sin sesión.
-- [ ] Búsqueda con año como pista, paginación «Ver más», estados de carga y error.
-- [ ] Agregar, cambiar estado y quitar desde tarjetas y detalle.
-- [ ] Calificación (1–5, quitar con segundo click) y comentario en el detalle.
-- [ ] Contador por estado, filtro por estado y orden por fecha o calificación.
-- [ ] Recomendaciones sin títulos ya guardados.
-- [ ] `scripts/test-rls.ts` en 12/12.
+- [x] Registro, login, logout y sesión persistente al recargar.
+- [x] Rutas protegidas redirigen a `/login` sin sesión.
+- [x] Búsqueda con año como pista, paginación «Ver más», estados de carga y error.
+- [x] Agregar, cambiar estado y quitar desde tarjetas y detalle.
+- [x] Calificación (1–5, quitar con segundo click) y comentario en el detalle.
+- [x] Contador por estado, filtro por estado y orden por fecha o calificación.
+- [x] Recomendaciones sin títulos ya guardados.
+- [x] `scripts/test-rls.ts` en 12/12.
+
+Verificado el 2026-11-11 en la app real: ver [`VERIFICACION.md`](VERIFICACION.md), sección 8, y los scripts de seguridad (`test-rls.ts` 12/12).
 
 ## 8. Notas para la épica E2 (Noche de película)
 

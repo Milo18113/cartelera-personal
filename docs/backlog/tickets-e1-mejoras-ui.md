@@ -13,8 +13,7 @@ Restricciones comunes a todos los tickets:
 
 ---
 
-## E1-D01 — Información siempre visible debajo de la tarjeta
-
+## ~~E1-D01 — Información siempre visible debajo de la tarjeta~~  ✅ COMPLETO
 **Tipo:** Mejora (UI/UX) · **Prioridad:** Alta · **Deuda:** D-01
 
 **Historia de usuario**
@@ -65,8 +64,7 @@ Decisión de Milo al revisar las tarjetas en el navegador: el título deja de re
 
 ---
 
-## E1-D02 — Selector de estado en lugar del botón de avanzar
-
+## ~~E1-D02 — Selector de estado en lugar del botón de avanzar~~  ✅ COMPLETO
 **Tipo:** Mejora (UI/UX + regla de dominio) · **Prioridad:** Alta · **Deuda:** D-02
 
 **Historia de usuario**
@@ -133,8 +131,7 @@ Todo lo anterior se conserva como registro de lo que se construyó y se probó. 
 
 ---
 
-## E1-D03 — Snackbar de notificaciones
-
+## ~~E1-D03 — Snackbar de notificaciones~~  ✅ COMPLETO
 **Tipo:** Mejora (UI/UX) · **Prioridad:** Alta · **Deuda:** D-03, D-09
 
 **Historia de usuario**
@@ -175,8 +172,7 @@ Un snackbar (aviso flotante en la parte inferior de la pantalla) reutilizable po
 
 ---
 
-## E1-D04 — Navegación de filas con flechas
-
+## ~~E1-D04 — Navegación de filas con flechas~~  ✅ COMPLETO
 **Tipo:** Mejora (UI/UX) · **Prioridad:** Media · **Deuda:** D-04
 
 **Historia de usuario**
@@ -255,8 +251,7 @@ Hallazgo H-12 de la auditoría: con teclado, las flechas venían después de tod
 
 ---
 
-## E1-D05 — Escala tipográfica centralizada
-
+## ~~E1-D05 — Escala tipográfica centralizada~~  ✅ COMPLETO
 **Tipo:** Refactor (estilos) · **Prioridad:** Media · **Deuda:** D-13
 
 **Historia de usuario**
@@ -315,8 +310,7 @@ Equivalencias con los valores actuales:
 
 ---
 
-## E1-D06 — Pantalla de error de conexión
-
+## ~~E1-D06 — Pantalla de error de conexión~~  ✅ COMPLETO
 **Tipo:** Mejora (UI/UX) · **Prioridad:** Media · **Deuda:** D-11 (en parte) · **Origen:** hallazgo H-11 de [`AUDITORIA.md`](../AUDITORIA.md)
 
 **Historia de usuario**
