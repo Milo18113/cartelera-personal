@@ -6,7 +6,7 @@ Estado de cada criterio de las [historias](backlog/historias-e2.md), de la [spec
 - **No cumple:** se probó y falló.
 - **Sin verificar:** nadie lo ha comprobado todavía. Casi siempre falta el navegador o Supabase real; ahí se completa con [`VERIFICACION.md`](VERIFICACION.md).
 
-**Cómo se hizo esta pasada.** Dos veces. La primera (antes de abrir la app), con `npm test`, `npm run build`, `npm run lint` y búsquedas en el código. La segunda, el 2026-11-11, con la app real: un Chrome automatizado (Puppeteer) recorrió cada criterio con Supabase y TMDB de verdad y dos cuentas de prueba, y se corrieron los dos scripts de seguridad (`test-rls.ts` 12/12 y `test-rls-sesiones.ts` 26/26). Los pasos y lo que se vio están en [`VERIFICACION.md`](VERIFICACION.md). Hoy `npm test` corre 142 tests. Tres matices: el selector de estado se probó con teclado (enfocar y elegir con ↓), pero que el menú desplegable «abra» no se puede observar en Chrome sin pantalla; HU-01-C10 se probó con una cuenta limpia en lugar de mover todas las «por ver» de la cuenta principal; y DS-09 (escala de grises) lo juzgó Claude mirando capturas. **Falta el visto bueno de Milo.**
+**Cómo se hizo esta pasada.** Tres veces. La primera (antes de abrir la app), con `npm test`, `npm run build`, `npm run lint` y búsquedas en el código. La segunda, el 2026-11-11, con la app real: un Chrome automatizado (Puppeteer) recorrió cada criterio con Supabase y TMDB de verdad y dos cuentas de prueba, y se corrieron los dos scripts de seguridad (`test-rls.ts` 12/12 y `test-rls-sesiones.ts` 26/26). La tercera repitió el recorrido completo, con cuentas nuevas, después de E1-D04 (3) y E1-D06 (que cambian el orden de las flechas y los errores de conexión) para comprobar que no se rompió nada. Los pasos y lo que se vio están en [`VERIFICACION.md`](VERIFICACION.md). Hoy `npm test` corre 152 tests. Tres matices: DS-09 (escala de grises) y el menú del selector (E1-D02-C7) los confirmó Milo, porque no se pueden observar desde Chrome sin pantalla; HU-01-C10 se probó con una cuenta limpia en lugar de mover todas las «por ver» de la cuenta principal; y HU-01-C6 y HU-02-C9 se probaron con una película real sin duración en TMDB («Las nuevas desventuras de Cliff Booth»).
 
 ## Resumen
 
@@ -15,8 +15,8 @@ Estado de cada criterio de las [historias](backlog/historias-e2.md), de la [spec
 | Historias (HU) | 46 | 46 | 0 | 0 |
 | Spec (ES) | 24 | 24 | 0 | 0 |
 | Diseño (DS) | 12 | 12 | 0 | 0 |
-| Mejoras de interfaz de E1 (E1-D) | 48 | 48 | 0 | 0 |
-| **Total** | **130** | **130** | **0** | **0** |
+| Mejoras de interfaz de E1 (E1-D) | 57 | 57 | 0 | 0 |
+| **Total** | **139** | **139** | **0** | **0** |
 
 ## 1. Historias
 
@@ -24,7 +24,7 @@ Estado de cada criterio de las [historias](backlog/historias-e2.md), de la [spec
 
 | Criterio | Estado | Evidencia |
 | --- | --- | --- |
-| HU-01-C1 | **Cumple** | Regla ✅ (`nochePelicula.test.ts`: 30, 600 y « 120 » válidos). Verificado en la app real (`VERIFICACION.md`): 120 min: sin mensaje de error, 3 película(s) en «Caben en tu tiempo»; 30 min: sin mensaje de error, 0 película(s) en «Caben en tu tiempo»; 600 min: sin mensaje de error, 12 película(s) en «Caben en tu tiempo» |
+| HU-01-C1 | **Cumple** | Regla ✅ (`nochePelicula.test.ts`: 30, 600 y « 120 » válidos). Verificado en la app real (`VERIFICACION.md`): 120 min: sin mensaje de error, 3 película(s) en «Caben en tu tiempo»; 30 min: sin mensaje de error, 0 película(s) en «Caben en tu tiempo»; 600 min: sin mensaje de error, 11 película(s) en «Caben en tu tiempo» |
 | HU-01-C2 | **Cumple** | Regla ✅ (29 y 601 → `fuera_de_rango`). Verificado en la app real (`VERIFICACION.md`): 29: «El tiempo debe estar entre 30 y 600 minutos.», 0 películas; 601: «El tiempo debe estar entre 30 y 600 minutos.», 0 películas |
 | HU-01-C3 | **Cumple** | Regla ✅ (vacío, `90,5`, `una hora`). Verificado en la app real (`VERIFICACION.md`): «» → «Escribe cuántos minutos tienes.»; «90,5» → «Usa un número entero de minutos, sin decimales ni texto.»; «una hora» → «Usa un número entero de minutos, sin decimales ni texto.» |
 | HU-01-C4 | **Cumple** | `candidatas.test.ts`: «descarta las series y los estados distintos de por ver». |
@@ -32,10 +32,10 @@ Estado de cada criterio de las [historias](backlog/historias-e2.md), de la [spec
 | HU-01-C6 | **Cumple** | Regla ✅ (`normalizarRuntime(0)`, `clasificarCandidatas` con `sin_duracion`). Verificado en la app real (`VERIFICACION.md`): «Las nuevas desventuras de Cliff Booth» (runtime 0 en TMDB): en «No disponibles» con «Sin duración conocida: no se puede agregar.»; no está en «Caben» y no tiene botón «Agregar» (false) |
 | HU-01-C7 | **Cumple** | `candidatas.test.ts`: orden por fecha y desempate por título. |
 | HU-01-C8 | **Cumple** | Verificado en la app real (`VERIFICACION.md`): con Slow 3G se vieron rectángulos de carga (true) y después la lista (true) |
-| HU-01-C9 | **Cumple** | Verificado en la app real (`VERIFICACION.md`): con la API de películas bloqueada: 12 en «No disponibles» con «No se pudo consultar la duración.» y botón «Reintentar» (0 en Caben); tras quitar el bloqueo y reintentar: 3 en «Caben en tu tiempo» |
+| HU-01-C9 | **Cumple** | Verificado en la app real (`VERIFICACION.md`): con la API de películas bloqueada: 11 en «No disponibles» con «No se pudo consultar la duración.» y botón «Reintentar» (0 en Caben); tras quitar el bloqueo y reintentar: 3 en «Caben en tu tiempo» |
 | HU-01-C10 | **Cumple** | Regla ✅ (`vacio: 'sin_por_ver'`). Verificado en la app real (`VERIFICACION.md`): cuenta B (lista vacía, sin «por ver»): «No tienes películas por ver. Agrégalas desde el inicio.». Equivale al paso del documento (pasar todas las «por ver» a otro estado) con una cuenta limpia. |
 | HU-01-C11 | **Cumple** | Regla ✅ (`vacio: 'ninguna_cabe'`). Verificado en la app real (`VERIFICACION.md`): con 30 min: «Ninguna de tus películas por ver cabe en 30 min.» |
-| HU-01-C12 | **Cumple** | Verificado en la app real (`VERIFICACION.md`): 120 min → 3 (esperadas 3); 200 min → 12 (esperadas 12); 90 min → 2 (esperadas 2); la página no se recargó (sin-recarga) |
+| HU-01-C12 | **Cumple** | Verificado en la app real (`VERIFICACION.md`): 120 min → 3 (esperadas 3); 200 min → 11 (esperadas 11); 90 min → 1 (esperadas 1); la página no se recargó (sin-recarga) |
 
 ### HU-02 — Armar una sesión
 
@@ -61,10 +61,10 @@ Estado de cada criterio de las [historias](backlog/historias-e2.md), de la [spec
 | HU-03-C3 | **Cumple** | Regla ✅ (`normalizarNombre`, 60 caracteres). Verificado en la app real (`VERIFICACION.md`): «Mis sesiones» muestra el nombre de 60 caracteres idéntico al escrito |
 | HU-03-C4 | **Cumple** | Regla ✅ (61 caracteres → `demasiado_largo`). Verificado en la app real (`VERIFICACION.md`): 61 caracteres: «El nombre admite hasta 60 caracteres.» y botón deshabilitado (true); recortado a 60: sin mensaje y botón habilitado (true) |
 | HU-03-C5 | **Cumple** | Regla ✅ (`nombrePorDefecto(new Date(2026, 10, 11))` = «Noche del 11 de nov»). Verificado en la app real (`VERIFICACION.md`): vacío y solo espacios → «Noche del 11 de nov» y «Noche del 11 de nov» (esperado «Noche del 11 de nov») |
-| HU-03-C6 | **Cumple** | Inspección: el servicio y la función SQL no escriben en `mi_lista` (ver ES-10). Verificado en la app real (`VERIFICACION.md`): tras guardar 4 sesiones, «Pendientes» sigue con los mismos 13 títulos |
+| HU-03-C6 | **Cumple** | Inspección: el servicio y la función SQL no escriben en `mi_lista` (ver ES-10). Verificado en la app real (`VERIFICACION.md`): tras guardar 4 sesiones, «Pendientes» sigue con los mismos 12 títulos |
 | HU-03-C7 | **Cumple** | Verificado en la app real (`VERIFICACION.md`): «Toy Story» estaba en la primera sesión; se guardó en otra sin advertencias (0 errores) y ambas aparecen en «Mis sesiones» |
 | HU-03-C8 | **Cumple** | Verificado en la app real (`VERIFICACION.md`): Ver HU-04-C3: el detalle de la sesión «Orden de agregado» muestra «Tiempo disponible: 10 h» con el que se armó y «Sobraban …» calculado. |
-| HU-03-C9 | **Cumple** | Verificado en la app real (`VERIFICACION.md`): sin red: «No se pudo guardar la sesión: TypeError: Failed to fetch»; la sesión seguía armada (1 película); al volver la red se guardó |
+| HU-03-C9 | **Cumple** | Verificado en la app real (`VERIFICACION.md`): sin red: «No se pudo guardar la sesión: No se pudo conectar con el servidor.»; la sesión seguía armada (1 película); al volver la red se guardó |
 | HU-03-C10 | **Cumple** | Inspección: `useGuardarSesion` bloquea con un `ref` y el botón se deshabilita. Verificado en la app real (`VERIFICACION.md`): dos clics en el mismo instante: «Mis sesiones» pasó de 5 a 6 sesiones |
 | HU-03-C11 | **Cumple** | Regla ✅ (`normalizarNombre` conserva `<b>hola</b> 🎬`). Verificado en la app real (`VERIFICACION.md`): en la lista se lee «<b>hola</b> 🎬» (sin elemento <b>: true); en el detalle «<b>hola</b> 🎬» (sin <b>: true) |
 
@@ -78,7 +78,7 @@ Estado de cada criterio de las [historias](backlog/historias-e2.md), de la [spec
 | HU-04-C4 | **Cumple** | Inspección: la sesión lee sus propias filas copiadas, no `mi_lista`. Verificado en la app real (`VERIFICACION.md`): se quitó «Vengadores: Endgame» de mi lista; la sesión se ve igual (mismas 3 películas, duraciones, pósters y totales) |
 | HU-04-C5 | **Cumple** | Igual que HU-04-C4. Verificado en la app real (`VERIFICACION.md`): «Toy Story» pasó a «Vista» en mi lista; la sesión no cambió |
 | HU-04-C6 | **Cumple** | Inspección: no hay acciones de editar ni de eliminar (ver ES-22). Verificado en la app real (`VERIFICACION.md`): «Mis sesiones»: 0 botones; detalle: 0 botones; sin textos de editar/eliminar/borrar/quitar |
-| HU-04-C7 | **Cumple** | Verificado en la app real (`VERIFICACION.md`): Slow 3G: rectángulos de carga (true) y luego la lista (true); con la API bloqueada: «No se pudieron cargar tus sesiones: TypeError: Failed to fetch» y botón «Reintentar»; al reintentar sin bloqueo se cargó la lista |
+| HU-04-C7 | **Cumple** | Verificado en la app real (`VERIFICACION.md`): Slow 3G: rectángulos de carga (true) y luego la lista (true); con la API bloqueada: pantalla de error con «No se pudo conectar con el servidor.» y botón «Reintentar»; al reintentar sin bloqueo se cargó la lista |
 
 ### HU-05 — Mantener mis sesiones privadas
 
@@ -86,7 +86,7 @@ Estado de cada criterio de las [historias](backlog/historias-e2.md), de la [spec
 | --- | --- | --- |
 | HU-05-C1 | **Cumple** | Inspección: las tres rutas están dentro del layout protegido de `App.tsx`. Verificado en la app real (`VERIFICACION.md`): Sin sesión, «/noche», «/noche/sesiones» y «/noche/sesiones/1» terminan en «/login» (también «/»). |
 | HU-05-C2 | **Cumple** | Verificado en la app real (`VERIFICACION.md`): Script `scripts/test-rls-sesiones.ts` contra Supabase real, corrida del 2026-11-11: 26/26 verificaciones correctas. «A solo ve su sesión, con sus películas» y «B también ve únicamente la suya»: PASS. |
-| HU-05-C3 | **Cumple** | Igual que HU-05-C2: falta el script y abrir la dirección en el navegador. Verificado en la app real (`VERIFICACION.md`): la cuenta B abre la sesión 30 de A: «No encontramos esa sesión.»; una inexistente: «No encontramos esa sesión.»; «/abc»: «No encontramos esa sesión.» (se ven igual). El script de seguridad también pasó (26/26). |
+| HU-05-C3 | **Cumple** | Igual que HU-05-C2: falta el script y abrir la dirección en el navegador. Verificado en la app real (`VERIFICACION.md`): la cuenta B abre la sesión 40 de A: «No encontramos esa sesión.»; una inexistente: «No encontramos esa sesión.»; «/abc»: «No encontramos esa sesión.» (se ven igual). El script de seguridad también pasó (26/26). |
 | HU-05-C4 | **Cumple** | Igual que HU-05-C2: falta el script. Verificado en la app real (`VERIFICACION.md`): Script `scripts/test-rls-sesiones.ts` contra Supabase real, corrida del 2026-11-11: 26/26 verificaciones correctas. «B no puede modificar ni eliminar la sesión de A» y «La sesión de A sigue intacta»: PASS. |
 | HU-05-C5 | **Cumple** | Igual que HU-05-C2: falta el script. Verificado en la app real (`VERIFICACION.md`): Script `scripts/test-rls-sesiones.ts` contra Supabase real, corrida del 2026-11-11: 26/26 verificaciones correctas. «B no puede insertar una sesión a nombre de A» y «B no puede insertar películas en la sesión de A»: PASS. |
 | HU-05-C6 | **Cumple** | Igual que HU-05-C2: falta el script. Verificado en la app real (`VERIFICACION.md`): Script `scripts/test-rls-sesiones.ts` contra Supabase real, corrida del 2026-11-11: 26/26 verificaciones correctas. «Sin sesión, guardar_sesion es rechazada» y «Sin sesión no se ve ninguna sesión»: PASS. |
@@ -127,17 +127,17 @@ Estado de cada criterio de las [historias](backlog/historias-e2.md), de la [spec
 | DS-01 | **Cumple** | Búsqueda de `#…`, `rgb(` y `rgba(` en la sección nueva de `index.css`: ninguno. |
 | DS-02 | **Cumple** | Búsqueda de `font-size` sin `var(--fs-` en todo `index.css`: ninguno. |
 | DS-03 | **Cumple** | Los cuatro usos de lucide en E2 (`Clock`, `ArrowLeft`) llevan `{...ICON_PROPS}`. |
-| DS-04 | **Cumple** | Verificado en la app real (`VERIFICACION.md`): /noche: 13 paradas con Tab, sin indicador de foco: ninguna / /noche/sesiones: 15 paradas con Tab, sin indicador de foco: ninguna / detalle de sesión: 5 paradas con Tab, sin indicador de foco: ninguna |
+| DS-04 | **Cumple** | Verificado en la app real (`VERIFICACION.md`): /noche: 12 paradas con Tab, sin indicador de foco: ninguna / /noche/sesiones: 13 paradas con Tab, sin indicador de foco: ninguna / detalle de sesión: 5 paradas con Tab, sin indicador de foco: ninguna |
 | DS-05 | **Cumple** | Los botones nuevos tienen texto visible («Agregar», «Quitar», «Guardar sesión», «Reintentar»); no hay botones de solo ícono. |
 | DS-06 | **Cumple** | Inspección: hay carga, error y vacío. Verificado en la app real (`VERIFICACION.md`): Mismas simulaciones que ES-19: las pantallas nuevas muestran carga, error y vacío. |
 | DS-07 | **Cumple** | Verificado en la app real (`VERIFICACION.md`): a 360 px sin scroll horizontal en: /noche (true), /noche/sesiones (true), detalle de sesión (true) |
 | DS-08 | **Cumple** | La sección nueva de CSS no define animaciones ni transiciones; el shimmer reutilizado ya respeta `prefers-reduced-motion`. |
-| DS-09 | **Cumple** | Verificado en la app real (`VERIFICACION.md`): Revisión visual de dos capturas en escala de grises (`/noche` con sesión armada y aviso de «se pasa», y `/noche/sesiones`): todo el texto se lee; el aviso de exceso se entiende por su texto y no solo por el color; el botón deshabilitado se distingue. Revisión de Claude, no de Milo. |
+| DS-09 | **Cumple** | Verificado en la app real (`VERIFICACION.md`): Revisión visual de dos capturas en escala de grises (`/noche` con sesión armada y aviso de «se pasa», y `/noche/sesiones`): todo el texto se lee; el aviso de exceso se entiende por su texto y no solo por el color; el botón deshabilitado se distingue. Milo las revisó y confirmó que se leen bien. |
 | DS-10 | **Cumple** | Búsqueda de `style=` y `!important` en los archivos nuevos: ninguno. |
 | DS-11 | **Cumple** | Clases BEM (`noche__*`, `fila__*`, `resumen__*`, `guardar`, `sesion-card__*`) en una sección propia al final de `index.css`. |
 | DS-12 | **Cumple** | Solo `.btn` (`--primary`, `--ghost`); el enlace con forma de botón es `.btn` sobre un `<a>`. |
 
-## 4. Mejoras de interfaz de E1 (E1-D01 a E1-D05)
+## 4. Mejoras de interfaz de E1 (E1-D01 a E1-D06)
 
 Criterios de los [tickets](backlog/tickets-e1-mejoras-ui.md) y la [spec](specs/spec-e1-mejoras-ui.md), con las actualizaciones del 2026-11-11. Se verificaron en la app real (ver [`VERIFICACION.md`](VERIFICACION.md) §9). E1-D02-C3 lo prueban los tests de Vitest y E1-D05-C1 una búsqueda en `index.css`.
 
@@ -152,37 +152,37 @@ Criterios de los [tickets](backlog/tickets-e1-mejoras-ui.md) y la [spec](specs/s
 | E1-D01-C5 | **Cumple** | 20 resultados a 360 px; máximo 2 líneas; 10 títulos recortados (p. ej. «Piratas del Caribe: La maldición de la Perla Negra»); pósters alineados por fila: true |
 | E1-D01-C6 | **Cumple** | overlay con mouse: opacidad 1; con Tab (foco en una tarjeta): opacidad 1 |
 | E1-D01-C7 | **Cumple** | emulación táctil (hover:none = true); overlay con opacidad 1; botón 36×36 px |
-| E1-D01-C8 | **Cumple** | póster → /titulo/pelicula/1130948; título → /titulo/pelicula/1280738 |
-| E1-D01-C9 | **Cumple** | «Supergirl»: alto 22.0 px con línea de 22.0 px; min-height auto |
-| E1-D01-C10 | **Cumple** | 5 filas: todas con un solo "top" y un solo alto de póster; filas con títulos de 1 y 2 líneas: 3 |
+| E1-D01-C8 | **Cumple** | póster → /titulo/pelicula/1383750; título → /titulo/pelicula/62 |
+| E1-D01-C9 | **Cumple** | «Django desencadenado»: alto 22.0 px con línea de 22.0 px; min-height auto |
+| E1-D01-C10 | **Cumple** | 5 filas: todas con un solo "top" y un solo alto de póster; filas con títulos de 1 y 2 líneas: 4 |
 
 ### E1-D02 — «+» y papelera en las tarjetas; selector en el detalle
 
 | Criterio | Estado | Evidencia |
 | --- | --- | --- |
-| E1-D02-C1 | **Cumple** | título «Harry Potter y la piedra filosofal», opción inicial «Agregar a…», aviso «“Harry Potter y la piedra filosofal” agregada a En progreso», valor final «viendo» |
+| E1-D02-C1 | **Cumple** | título «Guardianes de la Galaxia: Volumen 3», opción inicial «Agregar a…», aviso «“Guardianes de la Galaxia: Volumen 3” agregada a En progreso», valor final «viendo» |
 | E1-D02-C2 | **Cumple** | avisos: «“Matrix Reloaded” movida a Vistas», «“Matrix Reloaded” movida a En progreso», «“Matrix Reloaded” movida a Pendientes»; queda en «Vistas»: Matrix Reloaded |
 | E1-D02-C3 | **Cumple** | `miLista.test.ts`: `decidirCambioEstado` devuelve `ninguno` para el mismo estado, con los tres estados. |
 | E1-D02-C4 | **Cumple** | 80 ms después de elegir con Slow 3G: disabled=true, aria-busy=true; luego se habilitó |
 | E1-D02-C5 | **Cumple** | En el detalle se pasó de vista → en progreso → pendiente → vista: cualquier estado desde cualquier otro. Ver E1-D02-C2. |
 | E1-D02-C6 | **Cumple** | con la petición de la lista retrasada 4 s: al aparecer el selector disabled=true; después se habilitó |
-| E1-D02-C7 | **Cumple** | con Tab se enfocó el selector (true); con ↓ pasó de «por_ver» a «viendo». Que el menú «abra» no se puede observar en Chrome sin pantalla: es el <select> nativo. |
+| E1-D02-C7 | **Cumple** | con Tab se enfocó el selector (true); con ↓ pasó de «por_ver» a «viendo». Milo confirmó que el menú desplegable se abre. |
 | E1-D02-C8 | **Cumple** | tras cambiar a «viendo» y recargar: estado=viendo, nota=«4 de 5», comentario=«Comentario de verificación» |
-| E1-D02-C9 | **Cumple** | Recomendadas: 18/18 con «+», 0 con selector; búsqueda «shrek»: 24 tarjetas fuera de mi lista, 0 con selector |
-| E1-D02-C10 | **Cumple** | «La guerra de los mundos»: primera en «Agregadas recientemente» (true), está en «Pendientes» (true), en la búsqueda su botón es «Quitar “La guerra de los mundos” de mi lista» |
+| E1-D02-C9 | **Cumple** | Recomendadas: 19/19 con «+», 0 con selector; búsqueda «shrek»: 24 tarjetas fuera de mi lista, 0 con selector |
+| E1-D02-C10 | **Cumple** | «The Imitation Game (Descifrando Enigma)»: primera en «Agregadas recientemente» (true), está en «Pendientes» (true), en la búsqueda su botón es «Quitar “The Imitation Game (Descifrando Enigma)” de mi lista» |
 | E1-D02-C11 | **Cumple** | 28/28 tarjetas de mi lista tienen solo papelera, sin «+» ni selector |
 | E1-D02-C12 | **Cumple** | «Dune: Parte dos» se quitó y su tarjeta volvió a mostrar «+» |
 | E1-D02-C13 | **Cumple** | «Shrek», 80 ms después de pulsar con Slow 3G: disabled=true, aria-busy=true |
-| E1-D02-C14 | **Cumple** | opciones del selector: Agregar a…, Pendiente, En progreso, Vista (actual: ) |
+| E1-D02-C14 | **Cumple** | opciones del selector: Pendiente, En progreso, Vista (actual: por_ver) |
 
 ### E1-D03 — Avisos (snackbar)
 
 | Criterio | Estado | Evidencia |
 | --- | --- | --- |
-| E1-D03-C1 | **Cumple** | aviso al pulsar «+»: «“La guerra de los mundos” agregada a Pendientes» |
+| E1-D03-C1 | **Cumple** | aviso al pulsar «+»: «“The Imitation Game (Descifrando Enigma)” agregada a Pendientes» |
 | E1-D03-C2 | **Cumple** | Al cambiar de estado en el detalle el aviso fue «“Matrix Reloaded” movida a Vistas» (también a En progreso y a Pendientes). Ver E1-D02-C2. |
 | E1-D03-C3 | **Cumple** | aviso al pulsar la papelera: «“Dune: Parte dos” quitada de tu lista» |
-| E1-D03-C4 | **Cumple** | sin red: aviso de error con role=alert, mensaje «TypeError: Failed to fetch» |
+| E1-D03-C4 | **Cumple** | sin red: aviso de error con role=alert, mensaje «No se pudo conectar con el servidor.» |
 | E1-D03-C5 | **Cumple** | dos altas seguidas («La leyenda de Korra», «Avatar: Los Siete Refugios»): 1 aviso visible: «“Avatar: Los Siete Refugios” agregada a Pendientes» |
 | E1-D03-C6 | **Cumple** | el aviso de éxito se cerró solo a los ~4.0 s (aparece desde que lo vi); con «Cerrar aviso» se quitó (true) |
 | E1-D03-C7 | **Cumple** | 360 px: aviso entre 16 y 344 px de 360, arriba en 639 (encabezado termina en 166), scroll horizontal: false; «“El señor de los anillos: La comunidad del anillo” agregada a Pendientes» |
@@ -197,14 +197,16 @@ Criterios de los [tickets](backlog/tickets-e1-mejoras-ui.md) y la [spec](specs/s
 | E1-D04-C3 | **Cumple** | al inicio (scrollLeft 0): flechas «anterior» 0, «siguiente» 1 |
 | E1-D04-C4 | **Cumple** | un click: la fila avanzó 972 px de 1068 visibles; aparece «anterior» (1) |
 | E1-D04-C5 | **Cumple** | al final: «anterior» 1, «siguiente» 0, fila al final: true |
-| E1-D04-C6 | **Cumple** | filas que caben completas: «En progreso» (1 tarjetas, 0 flechas); «Vistas» (1 tarjetas, 0 flechas) |
+| E1-D04-C6 | **Cumple** | filas que caben completas: «En progreso» (2 tarjetas, 0 flechas); «Vistas» (1 tarjetas, 0 flechas) |
 | E1-D04-C7 | **Cumple** | táctil: flechas con display none; deslizar movió la fila de 0 a 162 px |
-| E1-D04-C8 | **Cumple** | Tab llegó a «Ver anteriores» (visible con el foco: opacidad 1); Enter movió la fila de 2160 a 1134 px; nombres accesibles: Ver anteriores / Ver siguientes |
+| E1-D04-C8 | **Cumple** | Tab llegó a «Ver siguientes» (visible con el foco: opacidad 1); Enter movió la fila de 0 a 972 px; nombres accesibles: Ver anteriores / Ver siguientes |
 | E1-D04-C9 | **Cumple** | tras pulsar una flecha (sobre una tarjeta) la URL sigue siendo / |
 | E1-D04-C10 | **Cumple** | a 3200 px hay 3 flechas en total; a 700 px hay 4 (cambian al redimensionar sin recargar) |
 | E1-D04-C11 | **Cumple** | al llegar al final con Enter, el foco quedó en «icon-btn row__flecha row__flecha--anterior» |
-| E1-D04-C12 | **Cumple** | la fila estaba desplazada 972 px; al agregar «Prácticamente magia 2» volvió a 0 px y esa tarjeta está primera y a la vista (true) |
+| E1-D04-C12 | **Cumple** | la fila estaba desplazada 972 px; al agregar «Noche fatídica» volvió a 0 px y esa tarjeta está primera y a la vista (true) |
 | E1-D04-C13 | **Cumple** | desplazada 972 px; al quitar una tarjeta quedó en 810 px (no volvió al inicio) |
+| E1-D04-C14 | **Cumple** | «Recomendadas para ti»: primera parada en la fila = flecha (parada 10); «Agregadas recientemente»: primera parada en la fila = flecha (parada 49); «Pendientes»: primera parada en la fila = flecha (parada 76) |
+| E1-D04-C15 | **Cumple** | flecha a 4 px del borde derecho de la fila (el CSS la pone a 4 px), centrada con el póster (709 vs 709 px); la primera tarjeta empieza en el borde izquierdo y todas están a la misma distancia una de otra |
 
 ### E1-D05 — Escala tipográfica
 
@@ -213,6 +215,18 @@ Criterios de los [tickets](backlog/tickets-e1-mejoras-ui.md) y la [spec](specs/s
 | E1-D05-C1 | **Cumple** | Inspección: la búsqueda de `font-size` sin `var(--fs-` en `src/index.css` no devuelve nada (la misma de DS-02). |
 | E1-D05-C2 | **Cumple** | --font-base 1.1rem → 1.4rem: título de página 35.4→45.1 px, fila 17.6→22.4, tarjeta 17.6→22.4; al quitarlo vuelven a los valores originales |
 | E1-D05-C3 | **Cumple** | inicio: 35.4 ≥ 17.6 ≥ 17.6 ≥ 15.3 px / busqueda: 30.8 ≥ 17.6 ≥ 15.3 px / detalle: 40.7 ≥ 16.0 ≥ 15.3 px / noche: 35.4 ≥ 17.6 ≥ 17.6 ≥ 15.3 px |
+
+### E1-D06 — Pantalla de error de conexión
+
+| Criterio | Estado | Evidencia |
+| --- | --- | --- |
+| E1-D06-C1 | **Cumple** | 7 casos con la conexión cortada al cargar: Inicio (Supabase caído), Inicio (TMDB caído), Búsqueda, Detalle de un título, Noche de película, Mis sesiones, Detalle de una sesión. En todos: título «Error 404», texto «No se pudo conectar con el servidor.», encabezado visible y sin el contenido de la página. |
+| E1-D06-C2 | **Cumple** | TMDB responde 500: la búsqueda muestra «No se pudo completar la búsqueda: TMDB respondió con estado 500» y no la pantalla de error |
+| E1-D06-C3 | **Cumple** | «+» sin red: snackbar «No se pudo conectar con el servidor.» y la búsqueda sigue en su lugar (true); guardar sesión sin red: «No se pudo guardar la sesión: No se pudo conectar con el servidor.» y «Noche» sigue en su lugar (true) |
+| E1-D06-C4 | **Cumple** | «Mis sesiones» y el detalle de una sesión tienen «Reintentar» y, al quitar el bloqueo y pulsarlo, cargan el contenido; sin botón en: Inicio (Supabase caído), Inicio (TMDB caído), Búsqueda, Detalle de un título, Noche de película |
+| E1-D06-C5 | **Cumple** | a 360 px la pantalla ocupa de 16 a 344 px y no hay scroll horizontal (true) |
+| E1-D06-C6 | **Cumple** | en los 7 casos el texto lleva role="alert" y hay un solo h1 |
+| E1-D06-C7 | **Cumple** | sin archivo de imagen: 0 imágenes rotas en pantalla; con imagen: se muestra (ancho natural 1) con alt vacío |
 
 ## 5. Hallazgos
 
@@ -230,19 +244,19 @@ Lo que esta auditoría encontró y qué se hizo. Lo corregido se corrigió de ar
 | H-08 | La migración se validó solo en un Postgres local que simula Supabase. | **Resuelto** el 2026-11-11: `scripts/test-rls-sesiones.ts` contra el Supabase real, 26/26 (y `test-rls.ts`, 12/12). |
 | H-09 | La interfaz de E2 no se había visto en un navegador: quien la escribió no tenía credenciales de la app. | **Resuelto** el 2026-11-11: se recorrió en Chrome con la app real y dos cuentas de prueba; ningún criterio falló (`VERIFICACION.md` §2 a §7). |
 | H-10 | `npm audit` reporta 10 vulnerabilidades moderadas, todas en la cadena de ESLint (herramientas de desarrollo). Ninguna en dependencias de producción, y ninguna de Vitest ni de Prettier. | **Registrado, sin corregir**: `npm audit fix --force` actualiza ESLint con cambios que rompen compatibilidad y no es parte de E2. |
-| H-11 | Con la red cortada o una API bloqueada, los avisos de error muestran el texto técnico del navegador («TypeError: Failed to fetch», «Failed to fetch»): en el snackbar, al guardar una sesión, al cargar «Mis sesiones» y en la búsqueda. | **Registrado, sin corregir**: es la deuda D-11 de `ESTADO-INICIAL.md` (mensajes crudos). Ningún criterio lo prohíbe: piden que haya un mensaje de error y lo hay. |
-| H-12 | Con teclado, las flechas de una fila vienen después de todas sus tarjetas en el orden de Tab (más de 30 paradas antes de la primera flecha), y la fila se desplaza sola al enfocar cada tarjeta. | **Observación, sin corregir**: quien usa teclado llega a todas las tarjetas sin las flechas, así que le son redundantes. No incumple E1-D04-C8 ni C11. |
+| H-11 | Con la red cortada o una API bloqueada, los avisos de error mostraban el texto técnico del navegador («TypeError: Failed to fetch», «Failed to fetch»): en el snackbar, al guardar una sesión, al cargar «Mis sesiones» y en la búsqueda. | **Resuelto** el 2026-11-11 con E1-D06 (documento primero, código después): si al cargar una página no hay conexión se muestra `ErrorPage`, y las acciones fallidas avisan «No se pudo conectar con el servidor.». Cubre D-11 solo en lo que toca a la conexión: los demás mensajes crudos siguen pendientes. |
+| H-12 | Con teclado, las flechas de una fila venían después de todas sus tarjetas en el orden de Tab (más de 30 paradas antes de la primera flecha), y la fila se desplazaba sola al enfocar cada tarjeta. | **Resuelto** el 2026-11-11 con la actualización (3) de E1-D04: las flechas pasan antes de las tarjetas en el código, sin cambiar cómo se ven (E1-D04-C14 y C15). |
 
 ## 6. Pendientes y su razón
 
-- **Visto bueno de Milo** sobre esta verificación, hecha con un Chrome automatizado. Si algo no lo convence, se corrige de arriba hacia abajo (documento primero, código después).
-- **Deuda de E1 que sigue sin hacerse**: D-05, D-06, D-10 y D-11 de [`ESTADO-INICIAL.md`](ESTADO-INICIAL.md). Se resolvieron D-01 a D-04, D-09 y D-13 con los tickets E1-D01 a E1-D05 (sección 4). El brief pide registrar la deuda, no corregirla toda en este entregable.
-- **Datos de prueba**: la verificación creó cuentas `rls-test-*@example.com` (los scripts) y `rls-test-ui-*@example.com` (el navegador) en Supabase, con sus listas y sesiones. Las sesiones no se pueden borrar desde la app. Para borrarlas todas (SQL Editor): `delete from auth.users where email like 'rls-test-%@example.com';`.
+- **Deuda de E1 que sigue sin hacerse**: D-05, D-06 y D-10 de [`ESTADO-INICIAL.md`](ESTADO-INICIAL.md), y de D-11 los mensajes crudos que no son de conexión (los de conexión los cubre E1-D06). Se resolvieron D-01 a D-04, D-09 y D-13 con los tickets E1-D01 a E1-D05 (sección 4). El brief pide registrar la deuda, no corregirla toda en este entregable.
+- **La imagen de la pantalla de error**: va en `public/error-servidor.png` (la pone Milo). Sin ella la pantalla funciona y se ve igual sin imagen (E1-D06-C7).
+- **Datos de prueba**: la verificación creó cuentas `rls-test-*@example.com` (los scripts) y `rls-test-ui-*@example.com` (el navegador) en Supabase, con sus listas y sesiones. Milo borró las de la primera corrida; la tercera pasada creó otras. Las sesiones no se pueden borrar desde la app. Para borrarlas todas (SQL Editor): `delete from auth.users where email like 'rls-test-%@example.com';`.
 - **Puntos extra del brief**: «Llenar mi noche», filtro por género, marcar una sesión como realizada, validación adicional en la base de datos, revisión adversarial y publicación. No entraron por el plazo; cada uno requeriría su historia, sus criterios y su lugar en la spec **antes** del código. La versión desplegada en Vercel corresponde a E1, no incluye E2.
 
 ## 7. Cómo se completó esta auditoría
 
 1. Se llenó la columna «Resultado obtenido» de [`VERIFICACION.md`](VERIFICACION.md) y se pegó la salida del script.
 2. Cada criterio pasó de «sin verificar» a **Cumple** con la evidencia citada en esta tabla; el Resumen se contó de las propias tablas.
-3. Lo que la pasada encontró quedó en la sección 5 (H-11 y H-12). Nada falló.
-4. Si Milo encuentra algo que no cumple, se registra en la sección 5 y se corrige de arriba hacia abajo: primero el documento, después el código.
+3. Lo que la pasada encontró quedó en la sección 5 (H-11 y H-12, ambos resueltos con E1-D06 y E1-D04 (3)). Nada falló.
+4. Si algo no cumple más adelante, se registra en la sección 5 y se corrige de arriba hacia abajo: primero el documento, después el código.
