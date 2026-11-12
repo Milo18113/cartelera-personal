@@ -3,10 +3,12 @@ import { useSearchParams } from 'react-router-dom'
 import { MovieCardSkeleton } from '../components/MovieCardSkeleton'
 import { MovieCardWithActions } from '../components/MovieCardWithActions'
 import { tarjetaDeTitulo } from '../components/tarjetas'
+import { esErrorDeConexion } from '../domain/errores'
 import { claveTitulo } from '../domain/miLista'
 import { useAccionesTarjeta } from '../hooks/useAccionesTarjeta'
 import { useBusqueda } from '../hooks/useBusqueda'
 import { useMiLista } from '../lista/useMiLista'
+import { ErrorPage } from './ErrorPage'
 
 const SKELETONS = 12
 
@@ -26,6 +28,9 @@ export function SearchPage() {
       tarjetaDeTitulo(t, itemsPorClave.get(claveTitulo(t.tipo, t.tmdbId))),
     )
   }, [busqueda.items, lista.items])
+
+  // Si la primera página de resultados no logra conectar, no hay nada que mostrar (E1-D06).
+  if (busqueda.error !== null && esErrorDeConexion(busqueda.error)) return <ErrorPage />
 
   return (
     <main className="search">

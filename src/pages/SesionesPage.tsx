@@ -1,8 +1,10 @@
 import { Link } from 'react-router-dom'
 import { MENSAJE_SIN_SESIONES } from '../components/noche/mensajes'
 import { SesionResumenCard } from '../components/noche/SesionResumenCard'
+import { esErrorDeConexion } from '../domain/errores'
 import { useSesionesGuardadas } from '../hooks/useSesionesGuardadas'
 import { rutaNoche } from '../lib/rutas'
+import { ErrorPage } from './ErrorPage'
 
 const ESQUELETOS = 3
 
@@ -10,6 +12,9 @@ const ESQUELETOS = 3
 // acciones de editar ni de eliminar (DEC-03).
 export function SesionesPage() {
   const { sesiones, loading, error, reintentar } = useSesionesGuardadas()
+
+  // Aquí ya había «Reintentar» (HU-04-C7): la pantalla de error lo conserva (E1-D06).
+  if (error !== null && esErrorDeConexion(error)) return <ErrorPage onReintentar={reintentar} />
 
   return (
     <main className="noche">

@@ -1,4 +1,5 @@
 import { useEffect, useState, type ReactNode } from 'react'
+import { mensajeDeError } from '../domain/errores'
 import { claveTitulo, type Estado, type ItemLista } from '../domain/miLista'
 import {
   actualizarEstado,
@@ -55,7 +56,10 @@ export function MiListaProvider({ children }: { children: ReactNode }) {
       await accion()
       return true
     } catch (err) {
-      const mensaje = err instanceof Error ? err.message : 'No se pudo completar la acción'
+      // Sin conexión se avisa con el mensaje amable y no con «TypeError: Failed to fetch» (E1-D06).
+      const mensaje = mensajeDeError(
+        err instanceof Error ? err.message : 'No se pudo completar la acción',
+      )
       notificar({ tipo: 'error', mensaje })
       return false
     } finally {

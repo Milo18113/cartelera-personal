@@ -8,10 +8,12 @@ import { RemoveFromList } from '../components/RemoveFromList'
 import { StarRating } from '../components/StarRating'
 import { tarjetaDeDetalle } from '../components/tarjetas'
 import type { DetalleTitulo } from '../domain/detalle'
+import { esErrorDeConexion } from '../domain/errores'
 import { claveTitulo, type TipoContenido } from '../domain/miLista'
 import { useAccionesTarjeta } from '../hooks/useAccionesTarjeta'
 import { useDetalleTitulo } from '../hooks/useDetalleTitulo'
 import { useMiLista } from '../lista/useMiLista'
+import { ErrorPage } from './ErrorPage'
 
 // Valida los params de /titulo/:tipo/:id antes de montar el contenido (los hooks no pueden ser condicionales).
 export function DetailPage() {
@@ -40,6 +42,9 @@ function DetailContent({ tipo, tmdbId }: DetailContentProps) {
     if (hayHistorial > 0) navigate(-1)
     else navigate('/')
   }
+
+  // Sin conexión con TMDB no hay detalle que mostrar: pantalla de error en lugar del contenido (E1-D06).
+  if (error !== null && esErrorDeConexion(error)) return <ErrorPage />
 
   return (
     <main className="detail">

@@ -3,8 +3,10 @@ import { Link, useParams } from 'react-router-dom'
 import { ICON_PROPS } from '../components/iconos'
 import { MENSAJE_SESION_INEXISTENTE } from '../components/noche/mensajes'
 import { SesionDetalle } from '../components/noche/SesionDetalle'
+import { esErrorDeConexion } from '../domain/errores'
 import { useSesion } from '../hooks/useSesion'
 import { rutaSesiones } from '../lib/rutas'
+import { ErrorPage } from './ErrorPage'
 
 // Solo dígitos: «abc» o «12abc» no son un id, y se tratan igual que una sesión que no existe.
 function idDeLaRuta(parametro: string | undefined): number | null {
@@ -14,6 +16,9 @@ function idDeLaRuta(parametro: string | undefined): number | null {
 export function SesionDetailPage() {
   const { id: parametro } = useParams<{ id: string }>()
   const { sesion, loading, error, reintentar } = useSesion(idDeLaRuta(parametro))
+
+  // Aquí ya había «Reintentar» (HU-04-C7): la pantalla de error lo conserva (E1-D06).
+  if (error !== null && esErrorDeConexion(error)) return <ErrorPage onReintentar={reintentar} />
 
   return (
     <main className="noche">

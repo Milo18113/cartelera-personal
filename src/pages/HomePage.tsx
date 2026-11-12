@@ -5,6 +5,7 @@ import { FilterBar } from '../components/FilterBar'
 import { MovieRow } from '../components/MovieRow'
 import { StatPills } from '../components/StatPills'
 import { tarjetaDeItem, tarjetaDeTitulo } from '../components/tarjetas'
+import { esErrorDeConexion } from '../domain/errores'
 import {
   ESTADOS,
   ETIQUETA_ESTADO,
@@ -17,6 +18,7 @@ import {
 import { useAccionesTarjeta } from '../hooks/useAccionesTarjeta'
 import { useRecomendaciones } from '../hooks/useRecomendaciones'
 import { useMiLista } from '../lista/useMiLista'
+import { ErrorPage } from './ErrorPage'
 
 const MAX_RECIENTES = 15
 
@@ -46,6 +48,12 @@ export function HomePage() {
   )
 
   const estadosVisibles = ESTADOS.filter((estado) => filtro === 'todas' || filtro === estado)
+
+  // Si al cargar no hay conexión con Supabase o con TMDB, la página no tiene qué mostrar (E1-D06).
+  const sinConexion = [lista.error, recomendaciones.error].some(
+    (error) => error !== null && esErrorDeConexion(error),
+  )
+  if (sinConexion) return <ErrorPage />
 
   return (
     <main className="home">

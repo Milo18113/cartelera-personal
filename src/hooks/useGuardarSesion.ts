@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react'
+import { mensajeDeError } from '../domain/errores'
 import { puedeGuardar, type NuevaSesion } from '../domain/sesion'
 import { guardarSesion } from '../infrastructure/sesionesRepository'
 
@@ -29,7 +30,7 @@ export function useGuardarSesion(): UseGuardarSesion {
       return await guardarSesion(nueva)
     } catch (err) {
       // Lo armado se conserva: la pantalla solo lo vacía cuando devuelve un id (HU-03-C9).
-      setError(err instanceof Error ? err.message : 'No se pudo guardar la sesión')
+      setError(mensajeDeError(err instanceof Error ? err.message : 'No se pudo guardar la sesión'))
       return null
     } finally {
       enCurso.current = false

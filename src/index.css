@@ -1388,3 +1388,29 @@ a.btn {
     grid-template-columns: 1fr;
   }
 }
+
+/* ---------- Pantalla de error de conexión (E1-D06) ---------- */
+.error-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 48px 0;
+  text-align: center;
+}
+
+/* Tope de ancho para que a 360 px no haya scroll horizontal; max-width y no width: una imagen
+   chica se queda de su tamaño en lugar de agrandarse. Es decorativa. */
+.error-page__imagen {
+  max-width: min(100%, 320px);
+  height: auto;
+}
+
+/* Mismo tamaño que el título del inicio. */
+.error-page__title {
+  font-size: clamp(var(--fs-xl), 4vw, var(--fs-3xl));
+}
+
+.error-page__message {
+  color: var(--text-soft);
+}

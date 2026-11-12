@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { interpretarBusqueda } from '../domain/busqueda'
+import { mensajeDeError } from '../domain/errores'
 import { claveTitulo } from '../domain/miLista'
 import { buscarTitulos, type TituloTmdb } from '../infrastructure/tmdb'
 
@@ -91,7 +92,7 @@ export function useBusqueda(entrada: string): UseBusqueda {
             },
       )
     } catch (err) {
-      if (entradaActual.current === entrada) setErrorMas(mensajeDe(err))
+      if (entradaActual.current === entrada) setErrorMas(mensajeDeError(mensajeDe(err)))
     } finally {
       setCargandoMas(false)
     }

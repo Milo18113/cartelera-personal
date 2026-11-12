@@ -15,6 +15,7 @@ import {
 import { SesionArmada } from '../components/noche/SesionArmada'
 import { TiempoDisponibleForm } from '../components/noche/TiempoDisponibleForm'
 import { clasificarCandidatas, peliculasPorVer, type Candidata } from '../domain/candidatas'
+import { esErrorDeConexion } from '../domain/errores'
 import { validarTiempoDisponible } from '../domain/nochePelicula'
 import { nombreDemasiadoLargo, normalizarNombre, puedeGuardar } from '../domain/sesion'
 import { useDuraciones } from '../hooks/useDuraciones'
@@ -22,6 +23,7 @@ import { useGuardarSesion } from '../hooks/useGuardarSesion'
 import { useSesionEnArmado } from '../hooks/useSesionEnArmado'
 import { rutaSesiones } from '../lib/rutas'
 import { useMiLista } from '../lista/useMiLista'
+import { ErrorPage } from './ErrorPage'
 
 const ESQUELETOS = 4
 // El campo arranca con un valor razonable: así no se muestra un error antes de que la persona
@@ -94,6 +96,10 @@ export function NochePage() {
     setAviso(null)
     setGuardada(true)
   }
+
+  // Sin conexión con Supabase no hay lista de la que armar una noche (E1-D06). Una película cuya
+  // duración falla no entra aquí: va a «No disponibles» (ES-13).
+  if (lista.error !== null && esErrorDeConexion(lista.error)) return <ErrorPage />
 
   return (
     <main className="noche">
