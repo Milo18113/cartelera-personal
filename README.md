@@ -70,7 +70,7 @@ src/components/noche/         componentes de la pantalla
 src/pages/                    NochePage, SesionesPage, SesionDetailPage
 ```
 
-La demo en vivo corresponde al Entregable 3: Noche de película todavía no está desplegada.
+La demo en vivo (enlace de arriba) ya incluye Noche de película y las mejoras de interfaz.
 
 ## Mejoras de interfaz (Entregable 4)
 

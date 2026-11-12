@@ -1,0 +1,10 @@
+Entrega final: Mi Cartelera, Noche de película.
+Repositorio: https://github.com/Milo18113/cartelera-personal
+Commit final: https://github.com/Milo18113/cartelera-personal/commit/0e3e8ba (rama entregable-4; lo anterior ya está fusionado en master).
+App publicada (punto extra): https://cartelera-personal-brown.vercel.app
+
+Completado: harness, estado inicial, DESIGN.md y brand board, PRD, backlog (historias y 12 tickets), spec, Noche de película (regla de «cabe» con tests, migración y RLS en Supabase, servicios y pantallas), VERIFICACION.md, AUDITORIA.md (139 criterios, todos «cumple») y README. También las mejoras de interfaz del feedback del Proyecto 3 (E1-D01 a E1-D06): información bajo la tarjeta, selector de estado, avisos, flechas en las filas, escala tipográfica y pantalla de error de conexión.
+
+Verificación: un Chrome automatizado sobre la app real (Supabase y TMDB) más los dos scripts de seguridad (12/12 y 26/26); el método está declarado en VERIFICACION.md.
+
+Pendiente: deuda D-05, D-06 y D-10, y parte de D-11 (registradas en ESTADO-INICIAL.md; el brief pide registrarlas, no corregirlas). De los opcionales no hice «Llenar mi noche», filtro por género, marcar sesión como realizada, validación en la base de datos ni revisión adversarial. Sí publiqué la app en Vercel.
