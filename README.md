@@ -16,7 +16,7 @@ Proyecto de la materia Desarrollo Web 2 (USFQ). El Entregable 3 construyó la li
 | Autenticación | Supabase Auth | Registro, login, logout y sesión persistente |
 | Base de datos | Supabase (PostgreSQL) | Tabla `mi_lista` con políticas RLS por usuario |
 | Estilos | CSS plano (una sola hoja) | `src/index.css` |
-| Pruebas | Vitest | Tests de la regla de negocio de Noche de película, sin base de datos ni red |
+| Pruebas | Vitest | Tests de las reglas puras del dominio (Noche de película, estados de la lista, filas, errores de conexión), sin base de datos ni red |
 | Formato | Prettier | Lo aplica un hook del agente a cada archivo que edita |
 | Agente | Claude Code | Desarrollo guiado por specs; ver [Harness del agente](#harness-del-agente) |
 
@@ -24,11 +24,15 @@ Proyecto de la materia Desarrollo Web 2 (USFQ). El Entregable 3 construyó la li
 
 - **Acceso controlado:** ninguna pantalla de contenido es visible sin sesión; el logout está siempre visible en el header.
 - **Búsqueda en TMDB:** al presionar Enter se muestra una grilla de películas y series, con estados de carga y error. El año escrito se usa como pista (`matrix 1999`) sin esconder títulos que lleven números (`Blade Runner 2049`).
-- **Mi lista:** agregar, cambiar de estado (`por ver` → `viendo` → `vista`) y eliminar desde cualquier tarjeta.
+- **Mi lista:** el botón «+» de una tarjeta agrega el título como «por ver» y la papelera lo quita. El estado (cualquiera de los tres, desde cualquier otro) se elige en el detalle con un selector.
 - **Calificación y comentario personales** (1 a 5 y texto libre), independientes de la nota de TMDB.
 - **Página de detalle:** póster grande, sinopsis, director o creador, géneros, reparto, nota general de TMDB con estrellas y tu calificación y comentario.
 - **Resumen y filtros:** contador de pendientes, en progreso y vistas; filtro por estado y orden por fecha o calificación.
 - **Recomendaciones:** fila de películas populares de TMDB elegidas al azar, sin los títulos que ya guardaste.
+- **Tarjetas con la información siempre visible:** título, año y, si calificaste el título, tus estrellas, debajo del póster.
+- **Filas con flechas:** sin barra de desplazamiento; las flechas aparecen con el mouse o con el foco y solo hacia donde hay más tarjetas. En el celular se desliza.
+- **Avisos:** cada acción (agregar, mover, quitar) se confirma con un aviso abajo de la pantalla, y los fallos también avisan.
+- **Pantalla de error:** si al cargar una página no se puede conectar con Supabase o con TMDB, se muestra «Error 404 · No se pudo conectar con el servidor.» en lugar de un texto técnico.
 - **Seguridad real (RLS):** cada usuario solo ve, edita y borra sus propias filas, verificado contra la base de datos.
 
 ## Noche de película (Entregable 4)
@@ -68,6 +72,19 @@ src/pages/                    NochePage, SesionesPage, SesionDetailPage
 
 La demo en vivo corresponde al Entregable 3: Noche de película todavía no está desplegada.
 
+## Mejoras de interfaz (Entregable 4)
+
+A partir del feedback del profesor sobre el Entregable 3 y de criterio propio, se rehízo parte de la interfaz de la lista. Cada cambio tiene su ticket y su spec antes del código ([tickets](docs/backlog/tickets-e1-mejoras-ui.md), [spec](docs/specs/spec-e1-mejoras-ui.md)).
+
+| Ticket | Qué cambió |
+|---|---|
+| E1-D01 | Título, año y estrellas siempre visibles debajo del póster (antes salían solo con hover). |
+| E1-D02 | El estado ya no «solo avanza»: en el detalle se elige cualquiera de los tres con un selector. Las tarjetas alternan «+» (agrega como «por ver») y la papelera. |
+| E1-D03 | Avisos (snackbar) al agregar, mover y quitar, y cuando algo falla. |
+| E1-D04 | Filas sin barra de desplazamiento, con flechas: se alcanzan primero con Tab y la fila vuelve al inicio cuando llega una tarjeta nueva. |
+| E1-D05 | Escala tipográfica con dos variables (`--font-base` y `--font-ratio`) en `src/index.css`. |
+| E1-D06 | Pantalla de error cuando no hay conexión con el servidor. La imagen va en `public/error-servidor.png`; sin ella la pantalla se ve igual, sin imagen. |
+
 ## Capturas
 
 ### Login y registro
@@ -76,7 +93,7 @@ La demo en vivo corresponde al Entregable 3: Noche de película todavía no est�
 
 ### Inicio
 
-Se muestran las tarjetas de películas solamente con su poster por defecto. Se muestra la información adicional (título, año, estado) al hacer hover con el mouse sobre la tarjeta.
+Cada tarjeta muestra bajo el póster su título, su año y, si lo calificaste, tus estrellas. Sobre el póster, con el mouse o el foco, aparece un botón: «+» para agregar el título como pendiente o la papelera para quitarlo. Las filas se navegan con flechas.
 
 ![Pantalla de Inicio 1](docs/capturas/captura_inicio_1.png)
 
@@ -89,6 +106,16 @@ Se muestran las tarjetas de películas solamente con su poster por defecto. Se m
 ### Detalle de un título
 
 ![Pantalla de Detalle](docs/capturas/captura_detalle.png)
+
+### Noche de película
+
+Con el tiempo disponible escrito, a la izquierda lo que cabe y a la derecha la sesión que se arma, con su duración total y lo que te queda.
+
+![Pantalla de Noche de película](docs/capturas/captura_noche.png)
+
+### Mis sesiones
+
+![Pantalla de Mis sesiones](docs/capturas/captura_sesiones.png)
 
 ## Instalación
 
@@ -146,12 +173,12 @@ Reinicia `npm run dev` si cambias el `.env`: Vite solo lo lee al arrancar.
 
 | Qué | Comando | Qué comprueba |
 |---|---|---|
-| Regla de negocio | `npm test` | 103 tests de Vitest: la regla de «cabe» y sus bordes (sesión que ocupa exactamente el tiempo, una sola película, película sin duración, tiempo fuera de rango), las candidatas y su orden, armar y guardar una sesión, y el límite de consultas simultáneas. No usan red ni base de datos. |
+| Regla de negocio | `npm test` | 152 tests de Vitest (el dominio de Noche de película y el de E1: estados de la lista, flechas de las filas y errores de conexión). De «cabe»: la regla de «cabe» y sus bordes (sesión que ocupa exactamente el tiempo, una sola película, película sin duración, tiempo fuera de rango), las candidatas y su orden, armar y guardar una sesión, y el límite de consultas simultáneas. No usan red ni base de datos. |
 | Seguridad de la lista | `node --experimental-strip-types scripts/test-rls.ts` | RLS de `mi_lista` con dos cuentas (12 verificaciones). |
 | Seguridad de las sesiones | `node --experimental-strip-types scripts/test-rls-sesiones.ts` | Con dos cuentas: privacidad, solo lectura, no falsificar al dueño, guardado atómico y límites (26 verificaciones). Como las sesiones no se pueden eliminar, imprime el SQL para borrar los usuarios de prueba. |
 | Navegador | [`docs/VERIFICACION.md`](docs/VERIFICACION.md) | Cada criterio con sus pasos y su resultado obtenido. |
 
-Los resultados criterio por criterio, y lo que aún falta verificar, están en [`docs/AUDITORIA.md`](docs/AUDITORIA.md).
+Los resultados criterio por criterio (139 criterios, todos «cumple» en la última pasada) están en [`docs/AUDITORIA.md`](docs/AUDITORIA.md).
 
 ## Estructura del proyecto
 
@@ -160,23 +187,29 @@ La estructura sigue una separación por capas: el dominio es puro y la infraestr
 ```
 src/
 ├── domain/             # tipos y reglas puras, sin React ni red
-│   ├── miLista.ts      #   Estado, ItemLista, siguienteEstado(), ordenarLista()
+│   ├── miLista.ts      #   Estado, ItemLista, decidirCambioEstado(), ordenarLista()
 │   ├── busqueda.ts     #   interpretarBusqueda(): el año es una pista, no un filtro
-│   └── detalle.ts      #   DetalleTitulo
+│   ├── detalle.ts      #   DetalleTitulo
+│   ├── fila.ts         #   extremosDeFila(), llegoNuevaAlInicio(): las flechas de las filas
+│   └── errores.ts      #   esErrorDeConexion(), mensajeDeError()
 ├── infrastructure/     # acceso a servicios externos
 │   ├── miListaRepository.ts  # CRUD sobre Supabase (mi_lista)
 │   └── tmdb.ts               # búsqueda, recomendaciones y detalle en TMDB
 ├── lib/                # cliente de Supabase y helpers de rutas
 ├── auth/               # AuthProvider (Context), useAuth, ProtectedRoute
 ├── lista/              # MiListaProvider (Context): una sola copia de la lista
+├── notificaciones/     # NotificacionesProvider y useNotificaciones: el snackbar
 ├── hooks/              # useBusqueda, useDetalleTitulo, useRecomendaciones, useAccionesTarjeta
 ├── components/         # tarjetas, filas, pills, estrellas, buscador, formularios
-├── pages/              # Login, Registro, Inicio, Búsqueda, Detalle
+├── pages/              # Login, Registro, Inicio, Búsqueda, Detalle, Noche, Sesiones, ErrorPage
 └── index.css           # única hoja de estilos
 docs/
-└── schema.sql          # tabla mi_lista + RLS
+├── schema.sql          # tabla mi_lista + RLS
+├── migrations/         # sesiones de Noche de película
+└── ...                 # PRD, backlog, specs, verificación y auditoría
 scripts/
-└── test-rls.ts         # prueba de RLS contra la API REST
+├── test-rls.ts         # prueba de RLS de mi_lista contra la API REST
+└── test-rls-sesiones.ts  # prueba de RLS de las sesiones
 ```
 
 ## Modelo de datos
@@ -288,6 +321,7 @@ El historial de git sigue el orden **harness → estado inicial → PRD → back
 | [`docs/prd/PRD.md`](docs/prd/PRD.md) | El producto: problema, alcance, reglas de negocio y las decisiones del cliente. |
 | [`docs/backlog/`](docs/backlog/) | Historias con sus criterios, el refinamiento con la IA y los tickets. |
 | [`docs/specs/spec-e2-noche-de-pelicula.md`](docs/specs/spec-e2-noche-de-pelicula.md) | Cómo se construye: datos, funciones puras, servicios, interfaz y verificación. |
+| [`docs/specs/spec-e1-mejoras-ui.md`](docs/specs/spec-e1-mejoras-ui.md) | Cómo se construyen las mejoras de interfaz de la lista (tarjetas, selector, avisos, flechas, pantalla de error). |
 | [`docs/VERIFICACION.md`](docs/VERIFICACION.md) y [`docs/AUDITORIA.md`](docs/AUDITORIA.md) | Cómo se comprobó y con qué resultado. |
 
 ## Créditos
