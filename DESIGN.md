@@ -2,7 +2,7 @@
 
 Reglas visuales de la app. Todo componente nuevo (incluida la pantalla «Noche de película») se construye con lo que define este documento; la spec de interfaz lo cita por nombre y no copia sus valores.
 
-> **Sincronización.** Los valores de este documento están copiados de [`src/index.css`](src/index.css) (la fuente de verdad) al 2026-11-10, junto con el [brand board](docs/diseno/brand-board.html). Si cambia un token en el CSS, se actualizan los tres.
+> **Sincronización.** Los valores de este documento están copiados de [`src/index.css`](src/index.css) (la fuente de verdad) al 2026-11-10 (y los componentes, al 2026-11-11), junto con el [brand board](docs/diseno/brand-board.html). Si cambia un token en el CSS, se actualizan los tres.
 
 ## 1. Principios
 
@@ -95,16 +95,19 @@ Pills y chips usan `999px` (cápsula). **Espaciado:** no hay tokens; se usan mú
 | Componente | Clase | Cuándo usarlo | Variantes y estados |
 | --- | --- | --- | --- |
 | Botón de texto | `.btn` | Acciones con palabra. | `--primary` (acción principal, verde), `--ghost` (secundaria, borde), `--danger` (destructiva). Deshabilitado: 50 % de opacidad. |
-| Botón de ícono | `.icon-btn` | Acción rápida sobre un póster. Cuadrado, 36 px. | Neutro; `--por_ver`, `--viendo`, `--vista` (color de estado); `--eliminar` (hover rojo). `aria-busy` atenúa. |
-| Pill | `.pill` | Mostrar un estado o un conteo. Cápsula con fondo teñido de su propio color. | `--por_ver`, `--viendo`, `--vista`, `--ninguna`; `--btn` si es clicable. |
+| Botón de ícono | `.icon-btn` | Acción rápida sobre un póster. Cuadrado, 36 px. En la tarjeta hay uno solo: «+» (agrega como «por ver») o la papelera (quita). | Neutro; `--por_ver`, `--viendo`, `--vista` (color de estado); `--eliminar` (hover rojo). `aria-busy` atenúa. |
+| Pill | `.pill` | Mostrar un estado o un conteo. Cápsula con fondo teñido de su propio color. | `--por_ver`, `--viendo`, `--vista`, `--ninguna`. Solo informa: no se pulsa. |
 | Chip | `.chip` | Filtro de un grupo. | `aria-pressed="true"`: fondo blanco, texto oscuro. |
 | Campo | `.field input`, `select`, `.comment__input` | Entrada de datos. Etiqueta arriba, gap de 4 px. | Foco: contorno de 2 px en `--color-viendo`. |
 | Alerta | `.alert` | Mensaje en la página. | `--error`, `--ok`. |
-| Tarjeta | `.card` | Un título con póster 2:3. Todo es un enlace al detalle. | Overlay de acciones con hover o foco (siempre visible sin hover). `--skeleton` y `--cargando`: shimmer. |
-| Fila / grilla | `.row`, `.grid` | Fila con scroll horizontal; grilla que salta de línea. | Mensajes `.row__message`. |
+| Tarjeta | `.card` | Un título con póster 2:3 y, debajo, su información siempre visible: título (2 líneas como máximo), año y estrellas si hay nota. Todo es un enlace al detalle. | El overlay sobre el póster lleva solo el botón «+» o la papelera; aparece con hover o foco (siempre visible sin hover). `--skeleton` y `--cargando`: shimmer. |
+| Fila / grilla | `.row`, `.grid` | Fila con scroll horizontal sin barra, con flechas (`.row__flecha`); grilla que salta de línea. | Las flechas van a media altura del póster, aparecen con hover o foco, solo hacia donde hay más tarjetas, y no existen en táctil. Van antes de las tarjetas en el orden de Tab. Mensajes `.row__message`. |
 | Estrellas | `.stars` (lectura), `.rating-input` (edición) | Calificación 0 a 5. | Llena `--color-estrella`, vacía `--surface-highlight`. |
 | Confirmación en línea | `.confirm` | Antes de una acción que borra datos. | Texto + `btn--danger` + `btn--ghost`. |
 | Carga y vacío | `.status-message`, `.skeleton` | Esperando o sin datos. | Esqueleto con el mismo shimmer que la tarjeta. |
+| Selector de estado | `.estado-select` | Elegir el estado de un título en el detalle: un `<select>` nativo con ícono y flecha propios. | `--por_ver`, `--viendo`, `--vista`, `--ninguna` (color del estado, como las pills). |
+| Aviso (snackbar) | `.snackbar` | Confirmar o avisar el resultado de una acción, abajo de la pantalla. Uno a la vez; el nuevo reemplaza al anterior. | Éxito (borde verde, 4 s) y `--error` (borde rojo, 6 s). Lleva ícono, texto y un botón para cerrarlo. |
+| Pantalla de error | `.error-page` | Una página que no pudo conectar con el servidor: imagen decorativa, «Error 404» y «No se pudo conectar con el servidor.». Reemplaza el contenido; el encabezado se queda. | «Reintentar» (`.btn--ghost`) solo en «Mis sesiones» y el detalle de una sesión. |
 
 **Layout.** `.app` centra el contenido a `--page-width` con 16 px de margen lateral. Dos puntos de quiebre: `720px` (el detalle pasa a una columna) y `640px` (el buscador baja a su propia línea y se oculta el correo).
 
@@ -114,7 +117,8 @@ Pills y chips usan `999px` (cápsula). **Espaciado:** no hay tokens; se usan mú
 - Todo botón de solo ícono lleva `aria-label`.
 - Acciones en curso: `aria-busy`. Errores: `role="alert"`. Confirmaciones: `role="status"`.
 - El shimmer se apaga con `prefers-reduced-motion`.
-- Objetivo táctil mínimo de 36 px. En pantallas sin hover (`hover: none`) las acciones de la tarjeta están siempre visibles.
+- Objetivo táctil mínimo de 36 px. En pantallas sin hover (`hover: none`) las acciones de la tarjeta están siempre visibles y las flechas de las filas no existen (se navega deslizando).
+- Los avisos viven en una región `role="status"` que existe siempre; los de error llevan además `role="alert"`.
 - Contrastes medidos (WCAG, mínimo 4.5:1): `--text` sobre `--bg` 7.49:1, sobre `--surface` 6.50:1; `--text-soft` 11.25:1; `--text-strong` 17.84:1; `--color-por-ver` 7.08:1; `--color-viendo` 8.26:1; `--color-vista` 10.02:1; `--color-error` 6.43:1; `--color-estrella` 10.94:1. El texto `--bg` sobre cada color de estado: 7.08:1 a 10.02:1.
 
 ## 6. Prohibido
@@ -157,4 +161,4 @@ Valores literales que existen en `index.css` del Proyecto 3 y no cumplen DS-01. 
 | `.card__meta` | `#ccd` | Es `--text-soft`. |
 | `.alert--error`, `.alert--ok` | `rgba(255, 107, 107, 0.12)`, `rgba(0, 224, 84, 0.12)` | `--color-error` y `--color-vista` al 12 %. |
 
-Los tickets [E1-D01 a E1-D04](docs/backlog/tickets-e1-mejoras-ui.md) (información bajo la tarjeta, selector de estado, snackbar, flechas en las filas) cambiarían las tarjetas y añadirían componentes. Este documento describe el estado actual; se actualiza cuando se implementen.
+Los tickets [E1-D01 a E1-D06](docs/backlog/tickets-e1-mejoras-ui.md) (información bajo la tarjeta, selector de estado, snackbar, flechas en las filas, escala de fuentes y pantalla de error) ya están implementados: las filas de «Tarjeta», «Fila / grilla», «Selector de estado», «Aviso» y «Pantalla de error» de la tabla de componentes los reflejan.
