@@ -173,6 +173,52 @@ div.row__viewport                  (position: relative)
 - Visibles con hover sobre la fila o con foco de teclado; invisibles el resto del tiempo. En `hover: none` (táctil) no se muestran: se navega deslizando.
 - La barra de scroll se oculta (`scrollbar-width: none` y `::-webkit-scrollbar`), pero la pista conserva `overflow-x: auto`, así que el gesto táctil y el trackpad siguen funcionando.
 
+## E1-D06 — Pantalla de error de conexión
+
+Agregado el 2026-11-11 a partir del hallazgo H-11 de la auditoría (decisiones y criterios en el [ticket](../backlog/tickets-e1-mejoras-ui.md)).
+
+```
+src/domain/errores.ts       MENSAJE_SIN_CONEXION, esErrorDeConexion(mensaje), mensajeDeError(mensaje)
+src/domain/errores.test.ts
+src/pages/ErrorPage.tsx     { onReintentar?: () => void }
+public/error-servidor.*     la imagen (la pone Milo)
+```
+
+**Dominio (puro).**
+- `MENSAJE_SIN_CONEXION = 'No se pudo conectar con el servidor.'`
+- `esErrorDeConexion(mensaje: string): boolean`: verdadero si el texto contiene, sin distinguir mayúsculas, «failed to fetch» (Chrome; supabase-js lo entrega como «TypeError: Failed to fetch»), «networkerror» (Firefox: «NetworkError when attempting to fetch resource.») o «load failed» (Safari). Cualquier otro texto, incluido «TMDB respondió con estado 500», es falso.
+- `mensajeDeError(mensaje: string): string`: devuelve `MENSAJE_SIN_CONEXION` si es un error de conexión y, si no, el mismo mensaje.
+- **Por qué se decide por el texto.** Los hooks y repositorios ya guardan los errores como cadenas (`error: string`) y supabase-js entrega la falla de red como un mensaje, no como un tipo. Cambiar los tres repositorios a un tipo de error propio sería un refactor ajeno a este ticket.
+
+**`ErrorPage`.**
+
+```
+main.error-page
+├── img.error-page__imagen   (alt vacío; si falla la carga se oculta con estado local)
+├── h1.error-page__title     «Error 404»
+├── p.error-page__message    (role="alert") «No se pudo conectar con el servidor.»
+└── button.btn.btn--ghost    «Reintentar» (solo si llega `onReintentar`)
+```
+
+- Es una vista completa: reemplaza el `<main>` de la página. El encabezado vive en `AppLayout`, por eso se queda.
+- Estilos en `index.css`, solo con tokens. `error-page__title` usa `clamp(var(--fs-xl), 4vw, var(--fs-3xl))`, igual que `home__title`. La imagen se limita a `min(100%, 320px)` de ancho para que a 360 px no haya scroll horizontal.
+- La imagen se pide como `/error-servidor.png`; si Milo la entrega con otra extensión, se cambia esa constante.
+
+**Cableado.** Cada pantalla decide con `esErrorDeConexion` si muestra `ErrorPage`; los demás errores se muestran como hoy.
+
+| Pantalla | Muestra `ErrorPage` cuando… | «Reintentar» |
+| --- | --- | --- |
+| Inicio | `lista.error` o `recomendaciones.error` es de conexión | no |
+| Búsqueda | `busqueda.error` (la primera página) es de conexión | no |
+| Detalle de un título | el `error` del detalle es de conexión | no |
+| «Noche de película» | `lista.error` es de conexión | no |
+| «Mis sesiones» | su `error` es de conexión | sí (`reintentar`) |
+| Detalle de una sesión | su `error` es de conexión | sí (`reintentar`) |
+
+- **«Noche de película» no cambia por película.** Si falla la duración de una película, sigue yendo a «No disponibles» con «Reintentar» (ES-13, ES-14, HU-01-C9): eso es una película, no la página.
+- **Acciones.** `MiListaProvider` (agregar, quitar, cambiar de estado, calificar), `useGuardarSesion` y el error de «Ver más» de la búsqueda pasan el mensaje por `mensajeDeError`. Siguen siendo snackbar o aviso, no reemplazan la página. En «Guardar sesión» el aviso queda «No se pudo guardar la sesión: No se pudo conectar con el servidor.» (HU-03-C9 pide ese encabezado).
+- **No cambia:** los repositorios, los hooks de carga y el resto de los textos de error.
+
 ## Criterios y verificación
 
 Los ids numeran los criterios de cada ticket, en el orden en que están escritos allí. **Vitest** = test automático; **Navegador** = paso en [`VERIFICACION.md`](../VERIFICACION.md).
@@ -218,6 +264,15 @@ Los ids numeran los criterios de cada ticket, en el orden en que están escritos
 | E1-D04-C11 | Con teclado, al llegar al extremo el foco pasa a la flecha contraria y no se pierde. | Navegador |
 | E1-D04-C12 | Con «Agregadas recientemente» desplazada, agregar un título nuevo devuelve la fila al inicio y se ve la tarjeta nueva. | Vitest (`llegoNuevaAlInicio`) y Navegador |
 | E1-D04-C13 | Quitar una tarjeta de una fila desplazada no la devuelve al inicio. | Vitest y Navegador |
+| E1-D04-C14 | Con Tab, en cada fila las flechas que existan se alcanzan antes que las tarjetas de esa fila. | Navegador |
+| E1-D04-C15 | Las flechas siguen en el mismo lugar y ninguna tarjeta se mueve. | Navegador |
+| E1-D06-C1 | Si al cargar no hay conexión con Supabase o con TMDB, las seis pantallas muestran `ErrorPage` en lugar del contenido, con el encabezado visible. | Vitest (`esErrorDeConexion`) y Navegador |
+| E1-D06-C2 | Un error que no es de conexión (por ejemplo, un estado 500) conserva el mensaje de siempre. | Vitest y Navegador |
+| E1-D06-C3 | Una acción fallida por conexión muestra «No se pudo conectar con el servidor.» sin texto técnico, y la página sigue en su lugar. | Vitest (`mensajeDeError`) y Navegador |
+| E1-D06-C4 | «Mis sesiones» y el detalle de una sesión conservan «Reintentar»; las demás pantallas no llevan botón. | Navegador |
+| E1-D06-C5 | A 360 px la pantalla de error se ve completa y sin scroll horizontal. | Navegador (360 px) |
+| E1-D06-C6 | Un lector de pantalla anuncia el texto del error. | Navegador (inspección del DOM) |
+| E1-D06-C7 | Sin imagen, o si no carga, no queda un ícono de imagen rota. | Navegador |
 
 **Actualización 2026-11-11 de E1-D04 — foco.** El hook también devuelve `anteriorRef` y `siguienteRef` (funciones de ref, como `pistaRef`) y recuerda cuál fue la última flecha usada. Cuando esa flecha desaparece porque se llegó a ese extremo, y el foco quedó en el `body` (se perdió), lo pasa a la flecha contraria. Si el foco está en otro control, no lo toca.
 
@@ -231,6 +286,8 @@ export function llegoNuevaAlInicio(clavesAntes: readonly string[], clavesAhora: 
 
 `useFilaDesplazable` recibe las claves de las tarjetas de la fila, recuerda las anteriores y, cuando `llegoNuevaAlInicio` es verdadero, lleva la pista a `scrollLeft: 0` (suave, o inmediato con `prefers-reduced-motion`). `MovieRow` le pasa `peliculas.map(p => p.clave)`. Casos de Vitest: llega una nueva al inicio (sí); sin cambios (no); se quita la primera (no); reorden (no); se agrega al final (no); lista vacía ahora (no); primera carga con la fila vacía antes (sí, sin efecto visible: ya está en 0).
 
+**Actualización 2026-11-11 (3) de E1-D04 — flechas antes de las tarjetas.** En `MovieRow` las dos flechas (cada una existe solo si hay más tarjetas hacia ese lado) pasan a ir antes de `row__track` en el JSX, primero «anterior» y luego «siguiente». Es solo un cambio de orden: las flechas ya son `position: absolute` dentro de `row__viewport`, y las reglas del CSS (`.row__viewport .row__flecha`, `:hover`, `:focus-within`) son selectores descendientes, sin hermanos adyacentes (`+` ni `~`). Por eso el aspecto no cambia (E1-D04-C15) y el orden de Tab sí (E1-D04-C14). Los `ref` de las flechas y la lógica del foco de `useFilaDesplazable` no cambian: no dependen del orden.
+
 Criterios de interfaz de [`DESIGN.md`](../../DESIGN.md) que aplican a todo lo nuevo: DS-01 a DS-12.
 
 ## Casos de prueba de Vitest
@@ -238,6 +295,7 @@ Criterios de interfaz de [`DESIGN.md`](../../DESIGN.md) que aplican a todo lo nu
 - `miLista.test.ts`: `decidirCambioEstado(null, 'por_ver')` → agregar (y con cada estado); `('vista', 'viendo')` y `('vista', 'por_ver')` → cambiar; el mismo estado de entrada → ninguno, para los tres.
 - `mensajes.test.ts` (en `src/lista/`): los tres mensajes para cada estado, con el título entre comillas inglesas y la concordancia correcta.
 - `fila.test.ts`: al inicio (`scrollLeft` 0) solo siguiente; a mitad, ambas; al final (`scrollLeft + clientWidth` igual a `scrollWidth`) solo anterior; contenido que cabe, ninguna; tolerancia de 1 px; `pasoDeDesplazamiento(1000)` es 900.
+- `errores.test.ts` (E1-D06): «TypeError: Failed to fetch», «Failed to fetch», «NetworkError when attempting to fetch resource.» y «Load failed» son errores de conexión (también en mayúsculas); «TMDB respondió con estado 500», un `unique` violado y la cadena vacía no lo son; `mensajeDeError` devuelve el mensaje amable para los primeros y el mismo texto para los demás.
 
 ## Ticket → archivos
 
@@ -247,6 +305,7 @@ Criterios de interfaz de [`DESIGN.md`](../../DESIGN.md) que aplican a todo lo nu
 | E1-D02 | `components/EstadoSelect.tsx`, `domain/miLista.test.ts` | `domain/miLista.ts`, `CardActions.tsx`, `MovieCardWithActions.tsx`, `MovieRow.tsx`, `EstadoPill.tsx`, `hooks/useAccionesTarjeta.ts`, `pages/HomePage.tsx`, `SearchPage.tsx`, `DetailPage.tsx`, `index.css` | `components/etiquetasEstado.ts` |
 | E1-D03 | `notificaciones/NotificacionesProvider.tsx`, `notificacionesContextValue.ts`, `useNotificaciones.ts`, `components/Snackbar.tsx`, `lista/mensajes.ts`, `lista/mensajes.test.ts` | `components/AppLayout.tsx`, `lista/MiListaProvider.tsx`, `lista/miListaContextValue.ts`, `hooks/useAccionesTarjeta.ts`, `pages/HomePage.tsx`, `SearchPage.tsx`, `DetailPage.tsx`, `index.css` | — |
 | E1-D04 | `domain/fila.ts`, `domain/fila.test.ts`, `hooks/useFilaDesplazable.ts` | `components/MovieRow.tsx`, `index.css` | — |
+| E1-D06 | `domain/errores.ts`, `domain/errores.test.ts`, `pages/ErrorPage.tsx`, `public/error-servidor.*` | `pages/HomePage.tsx`, `SearchPage.tsx`, `DetailPage.tsx`, `NochePage.tsx`, `SesionesPage.tsx`, `SesionDetailPage.tsx`, `lista/MiListaProvider.tsx`, `hooks/useGuardarSesion.ts`, `hooks/useBusqueda.ts`, `index.css` | — |
 
 ## Riesgos
 

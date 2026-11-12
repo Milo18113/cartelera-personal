@@ -240,6 +240,19 @@ Pedido de Milo: al agregar un título, entra primero en «Agregadas recientement
 - [ ] DADO la fila «Agregadas recientemente» desplazada, CUANDO agrego un título nuevo, ENTONCES la fila vuelve al inicio y se ve la tarjeta nueva.
 - [ ] DADO una fila desplazada, CUANDO se quita una tarjeta, ENTONCES la fila no vuelve al inicio.
 
+### Actualización 2026-11-11 (3) — las flechas se alcanzan antes que las tarjetas con Tab
+
+Hallazgo H-12 de la auditoría: con teclado, las flechas venían después de todas las tarjetas de su fila (más de 30 paradas de Tab) y la fila se desplazaba sola al enfocar cada tarjeta, así que quien usa teclado casi nunca podía usarlas.
+
+| Decisión | Origen |
+| --- | --- |
+| Las flechas pasan antes de las tarjetas en el orden de Tab. En pantalla no cambia nada: siguen sobre los bordes de la fila, a media altura del póster | Pedido de Milo, a partir de H-12 |
+| Solo cambia el orden de los elementos en el código; el CSS no cambia | Criterio propio: las flechas ya están posicionadas de forma absoluta, no dependen de su lugar en el código |
+| Dentro del par, «anterior» va antes que «siguiente» | Criterio propio: sigue el orden de izquierda a derecha |
+
+- [ ] DADO el inicio, CUANDO se recorre con Tab, ENTONCES en cada fila las flechas que existan se alcanzan antes que las tarjetas de esa fila.
+- [ ] DADO una fila, CUANDO se compara con cómo se veía antes, ENTONCES las flechas están en el mismo lugar y ninguna tarjeta se mueve.
+
 ---
 
 ## E1-D05 — Escala tipográfica centralizada
@@ -302,9 +315,50 @@ Equivalencias con los valores actuales:
 
 ---
 
+## E1-D06 — Pantalla de error de conexión
+
+**Tipo:** Mejora (UI/UX) · **Prioridad:** Media · **Deuda:** D-11 (en parte) · **Origen:** hallazgo H-11 de [`AUDITORIA.md`](../AUDITORIA.md)
+
+**Historia de usuario**
+> Como usuario, quiero que, si la app no puede conectarse con el servidor, me lo diga con una pantalla clara y no con un texto técnico, para entender qué pasó sin ver «TypeError: Failed to fetch».
+
+**Descripción**
+Al probar la app con la red cortada, los avisos mostraban el texto técnico del navegador. Se agrega una pantalla de error (`ErrorPage`) para cuando una página no logra cargar sus datos por falta de conexión con Supabase o con la API de TMDB, y los avisos de las acciones fallidas dejan de mostrar texto técnico.
+
+| Decisión | Origen |
+| --- | --- |
+| Vista nueva `ErrorPage`, con una imagen, el título «Error 404» y el texto «No se pudo conectar con el servidor.» | Pedido de Milo |
+| Se muestra cuando una página, al cargarse, no logra conectar con Supabase o con la API de TMDB | Pedido de Milo |
+| Las acciones concretas (agregar, quitar, cambiar de estado, guardar una sesión) no reemplazan la página: siguen avisando con el snackbar o con su aviso, ahora con «No se pudo conectar con el servidor.» | Pedido de Milo |
+| El título usa el mismo tamaño que el del inicio, con su propia clase | Pedido de Milo |
+| El texto «404» se deja como lo pidió Milo, aunque ese número normalmente significa «no existe» y no «sin conexión» | Decisión de Milo |
+| Solo cuentan los errores de conexión («Failed to fetch» y sus equivalentes en Firefox y Safari). Un error del servidor (por ejemplo, TMDB responde 500) conserva su mensaje | Criterio propio: «No se pudo conectar» sería falso en esos casos |
+| El encabezado de la app se queda: se puede navegar o cerrar sesión | Criterio propio: la pantalla de error no deja a nadie atrapado |
+| «Mis sesiones» y el detalle de una sesión ya tenían «Reintentar» (HU-04-C7): su pantalla de error lo conserva. En las demás no hay botón | Criterio propio: no perder una función que ya existía ni incumplir un criterio de E2 |
+| La imagen es decorativa (`alt` vacío) y, si no carga, se oculta | Criterio propio: sin ícono de imagen rota |
+| La imagen la pone Milo en `public/`; mientras no esté, la pantalla funciona sin ella | Decisión de Milo |
+
+**Criterios de aceptación**
+- [ ] DADO el inicio, la búsqueda, el detalle de un título, «Noche de película», «Mis sesiones» o el detalle de una sesión, CUANDO al cargar no se puede conectar con Supabase o con TMDB, ENTONCES veo la pantalla de error (imagen, «Error 404» y «No se pudo conectar con el servidor.») en lugar del contenido, con el encabezado visible.
+- [ ] DADO un error que no es de conexión (por ejemplo, un estado 500), CUANDO la página carga, ENTONCES se muestra su mensaje de siempre y no la pantalla de error.
+- [ ] DADO que pulso «+» o la papelera, elijo un estado o guardo una sesión, CUANDO no hay conexión, ENTONCES veo «No se pudo conectar con el servidor.» en el aviso, sin texto técnico, y la página sigue en su lugar.
+- [ ] DADO la pantalla de error en «Mis sesiones» o en el detalle de una sesión, CUANDO pulso «Reintentar» con conexión, ENTONCES se carga el contenido; en las demás pantallas no hay botón.
+- [ ] DADO la pantalla de error, CUANDO la veo a 360 px, ENTONCES se ve completa y sin scroll horizontal.
+- [ ] DADO la pantalla de error, CUANDO la abre un lector de pantalla, ENTONCES anuncia el texto del error.
+- [ ] DADO que la imagen no existe o no carga, CUANDO se muestra la pantalla, ENTONCES no queda un ícono de imagen rota.
+
+**Definition of Done**
+- Criterios verificados con la red cortada y con la API bloqueada.
+- Tests de Vitest de `esErrorDeConexion` y `mensajeDeError`.
+- `npm run build` y `npm run lint` sin errores; sin `any`; solo tokens de `:root`.
+
+**Dependencias:** E1-D03 (usa el snackbar).
+
+---
+
 ## Notas
 
-**Orden recomendado:** E1-D05 → E1-D01 → E1-D02 → E1-D03 → E1-D04.
+**Orden recomendado:** E1-D05 → E1-D01 → E1-D02 → E1-D03 → E1-D04. Se suma E1-D06 el 2026-11-11, a partir de la auditoría, después de E1-D03.
 
 | Ticket | Depende de | Motivo |
 | --- | --- | --- |
@@ -313,7 +367,9 @@ Equivalencias con los valores actuales:
 | E1-D02 | E1-D01 | El selector va en el overlay rediseñado |
 | E1-D03 | E1-D02 | Los mensajes nombran el estado elegido |
 | E1-D04 | E1-D01 | Independiente en lógica; se hace al final para ajustar al alto final de la tarjeta |
+| E1-D06 | E1-D03 | Los avisos de acciones fallidas usan el snackbar |
 
 - Un commit por ticket, con el id en el mensaje, después del commit de este documento.
 - El README (capturas y descripción del overlay, «Enregable 3») se actualiza al cierre del entregable.
 - Fuera de alcance de estos tickets: D-05, D-06, D-10, D-11 (siguen pendientes en `ESTADO-INICIAL.md`).
+- Actualización 2026-11-11: E1-D06 cubre en parte D-11 (los mensajes de error de conexión). Los demás errores crudos de Supabase y TMDB siguen pendientes.
