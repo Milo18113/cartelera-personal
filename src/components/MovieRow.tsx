@@ -45,21 +45,9 @@ export function MovieRow({
       ) : (
         // El viewport ancla las flechas sobre los bordes; la pista es lo que se desplaza.
         <div className="row__viewport">
-          <div className="row__track" ref={pistaRef} aria-busy={loading}>
-            {loading
-              ? Array.from({ length: SKELETONS }, (_, i) => <MovieCardSkeleton key={i} />)
-              : peliculas.map((pelicula) => (
-                  <MovieCardWithActions
-                    key={pelicula.clave}
-                    pelicula={pelicula}
-                    busy={busy}
-                    onAgregar={onAgregar}
-                    onEliminar={onEliminar}
-                  />
-                ))}
-          </div>
-
-          {/* Una flecha solo existe si hay más tarjetas hacia ese lado. */}
+          {/* Una flecha solo existe si hay más tarjetas hacia ese lado. Van antes de las tarjetas
+              para que, con teclado, se alcancen primero: en pantalla da igual, están posicionadas
+              de forma absoluta sobre los bordes de la fila. */}
           {puedeAnterior && (
             <button
               type="button"
@@ -82,6 +70,19 @@ export function MovieRow({
               <ChevronRight {...ICON_PROPS} aria-hidden="true" />
             </button>
           )}
+          <div className="row__track" ref={pistaRef} aria-busy={loading}>
+            {loading
+              ? Array.from({ length: SKELETONS }, (_, i) => <MovieCardSkeleton key={i} />)
+              : peliculas.map((pelicula) => (
+                  <MovieCardWithActions
+                    key={pelicula.clave}
+                    pelicula={pelicula}
+                    busy={busy}
+                    onAgregar={onAgregar}
+                    onEliminar={onEliminar}
+                  />
+                ))}
+          </div>
         </div>
       )}
     </section>
